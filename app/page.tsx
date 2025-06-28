@@ -61,7 +61,9 @@ export default function HomePage() {
               </a>
             </nav>
             <div className="flex items-center space-x-4">
+              <Link href="/signup">
               <Button variant="ghost">Sign In</Button>
+                </Link>
               <Link href="/dashboard">
                 <Button>Get Started</Button>
               </Link>
