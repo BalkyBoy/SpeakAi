@@ -16,8 +16,6 @@ import Link from "next/link"
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -75,6 +73,23 @@ export default function SignUpPage() {
 
     // Simulate API call
     try {
+      const res = await fetch("http://localhost:5000/auth/register", {
+        method:'POST',
+        headers: {"Content-Type": "application/json"},
+        credentials:"include",
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || "Registration failed");
+      }
+
+      const {token} = await res.json();
+      // store token (HttpOnly cookie ideally: here for demo)
+      localStorage.setItem("token", token)
+
+
       await new Promise((resolve) => setTimeout(resolve, 2000))
       // Redirect to dashboard on success
       window.location.href = "/dashboard"
@@ -91,18 +106,9 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center mb-6">
-            <Mic className="h-10 w-10 text-blue-600 mr-3" />
-            <span className="text-3xl font-bold text-gray-900">SpeakAI</span>
-          </Link>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Create your account</h1>
-          <p className="text-gray-600">Start your pronunciation training journey today</p>
-        </div>
-
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100  items-center justify-center p-4 flex">
+      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
+        <div className="flex justify-center lg:justify-end">
         <Card className="shadow-xl">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Sign up</CardTitle>
@@ -119,38 +125,6 @@ export default function SignUpPage() {
 
             {/* Sign Up Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Name Fields */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      id="firstName"
-                      type="text"
-                      placeholder="John"
-                      value={formData.firstName}
-                      onChange={(e) => handleInputChange("firstName", e.target.value)}
-                      className="pl-10"
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    type="text"
-                    placeholder="Doe"
-                    value={formData.lastName}
-                    onChange={(e) => handleInputChange("lastName", e.target.value)}
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-
               {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -284,7 +258,7 @@ export default function SignUpPage() {
                 </Label>
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading || !agreeToTerms}>
+              <Button type="submit" className="w-full" disabled={isLoading || !agreeToTerms} onSubmit={handleSubmit}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -358,9 +332,15 @@ export default function SignUpPage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Footer */}
-        <div className="text-center mt-8">
+        </div>
+         <div className="text-center mb-8 hidden lg:block space-y-6 lg:pl-8">
+          <Link href="/" className="inline-flex items-center mb-6">
+            <Mic className="h-10 w-10 text-blue-600 mr-3" />
+            <span className="text-3xl font-bold text-gray-900">SpeakAI</span>
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Create your account</h1>
+          <p className="text-gray-600">Start your pronunciation training journey today</p>
+          <div className="text-center mt-8">
           <p className="text-xs text-gray-500">
             By creating an account, you agree to our{" "}
             <Link href="/terms" className="hover:underline">
@@ -372,6 +352,7 @@ export default function SignUpPage() {
             </Link>
           </p>
         </div>
+        </div>    
       </div>
     </div>
   )
