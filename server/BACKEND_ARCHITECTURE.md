@@ -391,7 +391,418 @@ GET /admin/analytics/lessons
 GET /admin/analytics/engagement
 ```
 
-## 4. Database Schema (Prisma)
+## 4. AI Service Architecture & Model Development
+
+### 4.1 AI Service Overview
+
+**Purpose**: Provide real-time speech analysis, pronunciation scoring, and feedback generation using machine learning models.
+
+**Core Components**:
+```
+┌─────────────────────────────────────────────────────────┐
+│                    AI Service Layer                     │
+├─────────────────────────────────────────────────────────┤
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
+│  │   Speech     │  │  Phoneme     │  │   Scoring    │ │
+│  │  Recognition │  │  Analysis    │  │   Engine     │ │
+│  └──────────────┘  └──────────────┘  └──────────────┘ │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
+│  │   Feedback   │  │     TTS      │  │   Language   │ │
+│  │  Generator   │  │   Engine     │  │   Models     │ │
+│  └──────────────┘  └──────────────┘  └──────────────┘ │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 4.2 Model Development Process
+
+#### Phase 1: Data Collection & Preparation
+
+**Data Requirements**:
+- Native speaker audio samples (10,000+ hours per language)
+- Non-native speaker recordings with proficiency labels
+- Phoneme-aligned transcriptions
+- Pronunciation error annotations
+
+**Data Pipeline**:
+```typescript
+interface TrainingData {
+  audioFile: string;
+  transcript: string;
+  phonemeAlignment: PhonemeAlignment[];
+  speakerMetadata: {
+    nativeLanguage: string;
+    targetLanguage: string;
+    proficiencyLevel: number;
+  };
+  annotations: PronunciationAnnotation[];
+}
+
+interface PhonemeAlignment {
+  phoneme: string;
+  startTime: number;
+  endTime: number;
+  confidence: number;
+}
+```
+
+#### Phase 2: Model Architecture
+
+**Primary Models**:
+
+1. **Speech Recognition Model (ASR)**
+   - Base: Wav2Vec 2.0 or Whisper
+   - Fine-tuned for pronunciation assessment
+   - Output: Phoneme-level transcription with timestamps
+
+2. **Pronunciation Scoring Model**
+   - Architecture: CNN + LSTM + Attention
+   - Input: Audio features (MFCC, mel-spectrogram)
+   - Output: Phoneme-level accuracy scores (0-100)
+
+3. **Feedback Generation Model**
+   - Architecture: Transformer-based (T5/BART)
+   - Input: Pronunciation scores + phoneme errors
+   - Output: Natural language feedback and suggestions
+
+4. **Text-to-Speech (TTS) Model**
+   - Base: Tacotron 2 or FastSpeech 2
+   - Voice: Native speaker voices per language
+   - Output: High-quality audio pronunciation examples
+   - Features: Adjustable speed, emphasis on specific phonemes
+
+**Model Stack**:
+```python
+# Pronunciation Scoring Model Architecture
+class PronunciationScorer(nn.Module):
+    def __init__(self):
+        self.feature_extractor = CNN_Encoder()
+        self.temporal_model = LSTM(hidden_size=512)
+        self.attention = MultiHeadAttention()
+        self.scorer = FeedForward(output_dim=1)
+    
+    def forward(self, audio_features, reference_phonemes):
+        features = self.feature_extractor(audio_features)
+        temporal = self.temporal_model(features)
+        attended = self.attention(temporal, reference_phonemes)
+        scores = self.scorer(attended)
+        return scores
+```
+
+#### Phase 3: Training Pipeline
+
+**Training Configuration**:
+```yaml
+training:
+  batch_size: 32
+  learning_rate: 0.0001
+  epochs: 100
+  optimizer: AdamW
+  scheduler: CosineAnnealingLR
+  
+data_augmentation:
+  - noise_injection: 0.1
+  - speed_perturbation: [0.9, 1.1]
+  - pitch_shift: [-2, 2]
+  - room_simulation: true
+
+validation:
+  split: 0.15
+  metrics:
+    - phoneme_accuracy
+    - word_error_rate
+    - pronunciation_score_correlation
+```
+
+**Training Process**:
+```typescript
+interface TrainingPipeline {
+  // 1. Data preprocessing
+  preprocessAudio(audioFile: File): AudioFeatures;
+  
+  // 2. Feature extraction
+  extractFeatures(audio: AudioFeatures): {
+    mfcc: number[][];
+    melSpectrogram: number[][];
+    pitch: number[];
+  };
+  
+  // 3. Model training
+  trainModel(config: TrainingConfig): TrainingResults;
+  
+  // 4. Evaluation
+  evaluateModel(testSet: Dataset): EvaluationMetrics;
+  
+  // 5. Model optimization
+  optimizeModel(model: Model): OptimizedModel;
+}
+```
+
+#### Phase 4: Model Deployment
+
+**Deployment Strategy**:
+```typescript
+interface ModelDeployment {
+  // Model serving
+  modelServer: {
+    framework: 'TensorFlow Serving' | 'TorchServe';
+    instances: number;
+    gpu: boolean;
+    batchSize: number;
+  };
+  
+  // API endpoint
+  endpoint: {
+    url: string;
+    authentication: 'API_KEY';
+    rateLimit: number;
+  };
+  
+  // Monitoring
+  monitoring: {
+    latency: boolean;
+    throughput: boolean;
+    accuracy: boolean;
+    errorRate: boolean;
+  };
+}
+```
+
+### 4.3 AI Service Implementation
+
+**Service Structure**:
+```typescript
+// src/ai/ai.service.ts
+@Injectable()
+export class AIService {
+  constructor(
+    private httpService: HttpService,
+    private cacheService: CacheService,
+  ) {}
+
+  async analyzePronunciation(dto: AnalyzePronunciationDto): Promise<PronunciationResult> {
+    // 1. Preprocess audio
+    const audioFeatures = await this.preprocessAudio(dto.audioFile);
+    
+    // 2. Call ML model
+    const modelResponse = await this.callMLModel({
+      features: audioFeatures,
+      targetWord: dto.targetWord,
+      language: dto.language,
+    });
+    
+    // 3. Generate feedback
+    const feedback = await this.generateFeedback(modelResponse);
+    
+    // 4. Calculate overall score
+    const score = this.calculateScore(modelResponse.phonemeScores);
+    
+    return {
+      accuracy: score,
+      phonemeScores: modelResponse.phonemeScores,
+      feedback: feedback,
+      suggestions: this.generateSuggestions(modelResponse),
+    };
+  }
+
+  private async callMLModel(input: ModelInput): Promise<ModelOutput> {
+    const cacheKey = this.generateCacheKey(input);
+    const cached = await this.cacheService.get(cacheKey);
+    
+    if (cached) return cached;
+    
+    const response = await this.httpService.post(
+      process.env.ML_MODEL_ENDPOINT,
+      input,
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.ML_API_KEY}`,
+        },
+        timeout: 5000,
+      }
+    ).toPromise();
+    
+    await this.cacheService.set(cacheKey, response.data, 3600);
+    return response.data;
+  }
+
+  private calculateScore(phonemeScores: PhonemeScore[]): number {
+    const weights = this.getPhonemeWeights();
+    let totalScore = 0;
+    let totalWeight = 0;
+    
+    phonemeScores.forEach(ps => {
+      const weight = weights[ps.phoneme] || 1.0;
+      totalScore += ps.accuracy * weight;
+      totalWeight += weight;
+    });
+    
+    return Math.round((totalScore / totalWeight) * 100) / 100;
+  }
+
+  private async generateFeedback(modelOutput: ModelOutput): Promise<string> {
+    const errors = modelOutput.phonemeScores.filter(ps => ps.accuracy < 0.7);
+    
+    if (errors.length === 0) {
+      return "Excellent pronunciation! Keep up the great work.";
+    }
+    
+    const feedbackParts = errors.map(error => {
+      return this.getPhonemeSpecificFeedback(error.phoneme, error.accuracy);
+    });
+    
+    return feedbackParts.join(' ');
+  }
+
+  private generateSuggestions(modelOutput: ModelOutput): string[] {
+    const suggestions = [];
+    const weakPhonemes = modelOutput.phonemeScores
+      .filter(ps => ps.accuracy < 0.7)
+      .sort((a, b) => a.accuracy - b.accuracy)
+      .slice(0, 3);
+    
+    weakPhonemes.forEach(phoneme => {
+      suggestions.push(this.getPhonemeImprovement(phoneme.phoneme));
+    });
+    
+    return suggestions;
+  }
+
+  async generateAudio(dto: GenerateAudioDto): Promise<AudioResult> {
+    // Call TTS model to generate pronunciation audio
+    const response = await this.httpService.post(
+      process.env.TTS_MODEL_ENDPOINT,
+      {
+        text: dto.word,
+        language: dto.language,
+        voice: dto.voice || 'default',
+        speed: dto.speed || 1.0,
+        emphasizePhonemes: dto.emphasizePhonemes || [],
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.TTS_API_KEY}`,
+        },
+        responseType: 'arraybuffer',
+      }
+    ).toPromise();
+
+    // Upload audio to S3
+    const audioUrl = await this.uploadAudioToS3(response.data, dto.word);
+
+    return {
+      audioUrl,
+      duration: this.calculateAudioDuration(response.data),
+      format: 'mp3',
+    };
+  }
+
+  private async uploadAudioToS3(audioBuffer: Buffer, filename: string): Promise<string> {
+    const key = `audio/${Date.now()}-${filename}.mp3`;
+    // S3 upload logic
+    return `https://cdn.speakai.com/${key}`;
+  }
+}
+```
+
+**DTOs and Interfaces**:
+```typescript
+// src/ai/dto/analyze-pronunciation.dto.ts
+export class AnalyzePronunciationDto {
+  @IsNotEmpty()
+  audioFile: Express.Multer.File;
+  
+  @IsString()
+  targetWord: string;
+  
+  @IsString()
+  language: string;
+  
+  @IsString()
+  phonetic: string;
+}
+
+export interface PronunciationResult {
+  accuracy: number;
+  phonemeScores: PhonemeScore[];
+  feedback: string;
+  suggestions: string[];
+  audioUrl?: string;
+}
+
+export interface PhonemeScore {
+  phoneme: string;
+  accuracy: number;
+  position: number;
+  duration: number;
+}
+
+export class GenerateAudioDto {
+  @IsString()
+  word: string;
+  
+  @IsString()
+  language: string;
+  
+  @IsOptional()
+  @IsString()
+  voice?: string;
+  
+  @IsOptional()
+  @IsNumber()
+  speed?: number;
+  
+  @IsOptional()
+  @IsArray()
+  emphasizePhonemes?: string[];
+}
+
+export interface AudioResult {
+  audioUrl: string;
+  duration: number;
+  format: string;
+}
+```
+
+### 4.4 Model Performance Metrics
+
+**Target Metrics**:
+```typescript
+interface ModelMetrics {
+  // Accuracy metrics
+  phonemeAccuracy: number;        // Target: > 95%
+  wordErrorRate: number;          // Target: < 5%
+  pronunciationCorrelation: number; // Target: > 0.85
+  
+  // Performance metrics
+  inferenceLatency: number;       // Target: < 500ms
+  throughput: number;             // Target: > 100 req/s
+  
+  // Quality metrics
+  feedbackRelevance: number;      // Target: > 90%
+  userSatisfaction: number;       // Target: > 4.5/5
+}
+```
+
+### 4.5 Continuous Improvement
+
+**Feedback Loop**:
+```typescript
+interface ModelImprovement {
+  // Collect user feedback
+  collectFeedback(sessionId: string, rating: number, comments: string): void;
+  
+  // Retrain with new data
+  scheduleRetraining(frequency: 'weekly' | 'monthly'): void;
+  
+  // A/B testing
+  runExperiment(modelA: Model, modelB: Model, traffic: number): ExperimentResults;
+  
+  // Monitor drift
+  detectModelDrift(threshold: number): DriftReport;
+}
+```
+
+## 5. Database Schema (Prisma)
 
 ```prisma
 generator client {

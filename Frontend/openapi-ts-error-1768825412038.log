@@ -1,0 +1,19 @@
+[2026-01-19T12:23:32.038Z] Error: Cannot find module './env-config.js'
+Require stack:
+- C:\Users\Balky\Desktop\SpeakAi\Frontend\openapi-ts.config.ts
+Stack:
+Error: Cannot find module './env-config.js'
+Require stack:
+- C:\Users\Balky\Desktop\SpeakAi\Frontend\openapi-ts.config.ts
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+    at Function.resolve (node:internal/modules/helpers:157:19)
+    at jitiResolve (C:\Users\Balky\Desktop\SpeakAi\Frontend\node_modules\.pnpm\jiti@2.6.1\node_modules\jiti\dist\jiti.cjs:1:148703)
+    at jitiRequire (C:\Users\Balky\Desktop\SpeakAi\Frontend\node_modules\.pnpm\jiti@2.6.1\node_modules\jiti\dist\jiti.cjs:1:150290)
+    at import (C:\Users\Balky\Desktop\SpeakAi\Frontend\node_modules\.pnpm\jiti@2.6.1\node_modules\jiti\dist\jiti.cjs:1:158307)
+    at C:/Users/Balky/Desktop/SpeakAi/Frontend/openapi-ts.config.ts:2:7
+    at async Function.import (C:\Users\Balky\Desktop\SpeakAi\Frontend\node_modules\.pnpm\jiti@2.6.1\node_modules\jiti\dist\jiti.cjs:1:158301)
+    at async resolveConfig (file:///C:/Users/Balky/Desktop/SpeakAi/frontend/node_modules/.pnpm/c12@3.3.3/node_modules/c12/dist/index.mjs:320:20)
+    at async loadConfig (file:///C:/Users/Balky/Desktop/SpeakAi/frontend/node_modules/.pnpm/c12@3.3.3/node_modules/c12/dist/index.mjs:149:22)
+    at async initConfigs (file:///C:/Users/Balky/Desktop/SpeakAi/Frontend/node_modules/.pnpm/@hey-api+openapi-ts@0.90.4_typescript@5.9.3/node_modules/@hey-api/openapi-ts/dist/openApi-D6jppAcA.mjs:15006:68)
+    at async createClient (file:///C:/Users/Balky/Desktop/SpeakAi/Frontend/node_modules/.pnpm/@hey-api+openapi-ts@0.90.4_typescript@5.9.3/node_modules/@hey-api/openapi-ts/dist/src-CGmZM4HZ.mjs:518:13)
+    at async runCli (file:///C:/Users/Balky/Desktop/SpeakAi/Frontend/node_modules/.pnpm/@hey-api+openapi-ts@0.90.4_typescript@5.9.3/node_modules/@hey-api/openapi-ts/dist/run.mjs:58:9)

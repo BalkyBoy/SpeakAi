@@ -1,129 +1,126 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      =  env("DATABASE_URL")
 }
 
 model User {
-  id              String   @id @default(cuid())
-  email           String   @unique
-  passwordHash    String
-  firstName       String?
-  lastName        String?
-  avatar          String?
-  nativeLanguage  String
-  learningLanguage String
-  isEmailVerified Boolean  @default(false)
+  id               String    @id @default(cuid())
+  email            String    @unique
+  passwordHash     String
+  firstName        String?
+  lastName         String?
+  avatar           String?
+  nativeLanguage   String
+  learningLanguage String   
+  isEmailVerified  Boolean   @default(false)
   emailVerificationToken String?
   resetPasswordToken String?
   passwordResetExpires DateTime?
-  isActive        Boolean  @default(true)
-  lastLoginAt     DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  isActive         Boolean   @default(true)
+  lastLoginAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  refreshTokenHash String?
+  refreshTokenExpires DateTime?
+
   // Relations
-  preferences     UserPreferences?
-  progress        LessonProgress[]
-  sessions        PracticeSession[]
-  achievements    UserAchievement[]
-  subscriptions   Subscription[]
-  
+  preferences   UserPreferences?
+  progress      LessonProgress[]
+  sessions      PracticeSession[]
+  achievements  UserAchievement[]
+  subscriptions Subscription[]
+
   @@map("users")
 }
 
 model UserPreferences {
-  id                    String  @id @default(cuid())
-  userId                String  @unique
-  dailyGoalMinutes      Int     @default(15)
-  reminderEnabled       Boolean @default(true)
-  reminderTime          String?
-  difficultyPreference  String  @default("adaptive")
-  audioQuality          String  @default("high")
-  
+  id                   String  @id @default(cuid())
+  userId               String  @unique
+  dailyGoalMinutes     Int     @default(15)
+  reminderEnabled      Boolean @default(true)
+  reminderTime         String?
+  difficultyPreference String  @default("adaptive")
+  audioQuality         String  @default("high")
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@map("user_preferences")
 }
 
 model Lesson {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  language    String
-  level       Level
-  duration    Int      // minutes
-  thumbnail   String?
-  rating      Float    @default(0)
-  studentCount Int     @default(0)
-  isPublished Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  id           String   @id @default(cuid())
+  title        String
+  description  String
+  language     String
+  level        Level
+  duration     Int // minutes
+  thumbnail    String?
+  rating       Float    @default(0)
+  studentCount Int      @default(0)
+  isPublished  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
   // Relations
-  words       LessonWord[]
-  progress    LessonProgress[]
-  categories  LessonCategory[]
-  sessions    PracticeSession[]
-  
+  words      LessonWord[]
+  progress   LessonProgress[]
+  categories LessonCategory[]
+  sessions   PracticeSession[]
+
   @@map("lessons")
 }
 
 model LessonWord {
-  id        String @id @default(cuid())
-  lessonId  String
-  word      String
-  phonetic  String
+  id         String  @id @default(cuid())
+  lessonId   String
+  word       String
+  phonetic   String
   difficulty String
-  tips      String?
-  audioUrl  String?
-  order     Int
-  
+  tips       String?
+  audioUrl   String?
+  order      Int
+
   lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  
+
   @@map("lesson_words")
 }
 
 model LessonProgress {
-  id          String   @id @default(cuid())
-  userId      String
-  lessonId    String
-  progress    Float    @default(0) // 0-100
-  completed   Boolean  @default(false)
+  id           String    @id @default(cuid())
+  userId       String
+  lessonId     String
+  progress     Float     @default(0) // 0-100
+  completed    Boolean   @default(false)
   lastAccuracy Float?
-  startedAt   DateTime @default(now())
-  completedAt DateTime?
-  
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
+
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  
+
   @@unique([userId, lessonId])
   @@map("lesson_progress")
 }
 
 model PracticeSession {
-  id           String   @id @default(cuid())
-  userId       String
-  lessonId     String?
-  duration     Int      // seconds
-  accuracy     Float
-  wordsCount   Int
-  completedAt  DateTime @default(now())
-  
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String   @id @default(cuid())
+  userId      String
+  lessonId    String?
+  duration    Int // seconds
+  accuracy    Float
+  wordsCount  Int
+  completedAt DateTime @default(now())
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   lesson Lesson? @relation(fields: [lessonId], references: [id])
-  
+
   // Relations
   attempts WordAttempt[]
-  
+
   @@map("practice_sessions")
 }
 
@@ -135,48 +132,48 @@ model WordAttempt {
   attempts  Int
   completed Boolean @default(false)
   audioUrl  String?
-  
+
   session PracticeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  
+
   @@map("word_attempts")
 }
 
 model Achievement {
-  id          String @id @default(cuid())
+  id          String  @id @default(cuid())
   title       String
   description String
   type        String // streak, accuracy, time, milestone
-  criteria    Json   // flexible criteria storage
+  criteria    Json // flexible criteria storage
   icon        String?
-  
+
   users UserAchievement[]
-  
+
   @@map("achievements")
 }
 
 model UserAchievement {
-  id           String   @id @default(cuid())
-  userId       String
+  id            String   @id @default(cuid())
+  userId        String
   achievementId String
-  earnedAt     DateTime @default(now())
-  
+  earnedAt      DateTime @default(now())
+
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   achievement Achievement @relation(fields: [achievementId], references: [id])
-  
+
   @@unique([userId, achievementId])
   @@map("user_achievements")
 }
 
 model Subscription {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  plan      String   // free, premium, pro
-  status    String   // active, cancelled, expired
-  startDate DateTime @default(now())
+  plan      String // free, premium, pro
+  status    String // active, cancelled, expired
+  startDate DateTime  @default(now())
   endDate   DateTime?
-  
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@map("subscriptions")
 }
 
@@ -184,9 +181,9 @@ model LessonCategory {
   id       String @id @default(cuid())
   name     String @unique
   lessonId String
-  
+
   lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  
+
   @@map("lesson_categories")
 }
 

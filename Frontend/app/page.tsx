@@ -40,7 +40,7 @@ export default function HomePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100">
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -61,10 +61,10 @@ export default function HomePage() {
               </a>
             </nav>
             <div className="flex items-center space-x-4">
-              <Link href="/signup">
+              <Link href="/auth/login">
               <Button variant="ghost">Sign In</Button>
                 </Link>
-              <Link href="/dashboard">
+              <Link href="/auth/signup">
                 <Button>Get Started</Button>
               </Link>
             </div>

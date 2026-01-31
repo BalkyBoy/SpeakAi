@@ -1,8 +1,6 @@
 "use client"
-
-import type React from "react"
-
-import { useState } from "react"
+import React from "react"
+import {  useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,9 +10,115 @@ import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Mic, Eye, EyeOff, Mail, Lock, User, AlertCircle, Loader2 } from "lucide-react"
-import Link from "next/link"
+import Link from "next/link";
+import * as z from "zod"
+import { useRouter } from "next/navigation"
+import { useMutation } from "@tanstack/react-query"
+import { authControllerRegisterMutation } from "@/client/@tanstack/react-query.gen"
+import {Controller, useForm} from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useAuth } from "@/app/providers/auth-provider"
+
+
+
+
+const signUpSchema = z
+  .object({
+    firstName: z
+      .string()
+      .max(15, 'First name must be at most 15 characters')
+      .min(1, 'First name is required')
+      .transform((val) => val.trim())
+      .refine(
+        (val) => val.length > 0,
+        'First name cannot be empty after trimming'
+      )
+      .refine(
+        (val) => /^[a-zA-Z]+$/.test(val),
+        'Only letters allowed, no spaces'
+      ),
+    lastName: z
+      .string()
+      .max(15, 'Last name must be at most 15 characters')
+      .min(1, 'Last name is required')
+      .transform((val) => val.trim())
+      .refine(
+        (val) => val.length > 0,
+        'Last name cannot be empty after trimming'
+      )
+      .refine(
+        (val) => /^[a-zA-Z]+$/.test(val),
+        'Only letters allowed, no spaces'
+      ),
+    email: z
+      .string()
+      .min(1, 'Email is required')
+      .email('Invalid email')
+      .transform((val) => val.toLowerCase()),
+    password: z
+      .string()
+      .min(8, 'Password must be at least 8 characters')
+      .max(128, 'Password must be at most 128 characters')
+      .regex(/^\S*$/, 'No spaces allowed in password')
+      .regex(/[A-Z]/, 'Must include at least one uppercase letter')
+      .regex(/[a-z]/, 'Must include at least one lowercase letter')
+      .regex(/[0-9]/, 'Must include at least one number'),
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
+    nativeLanguage: z.string().min(1, 'Native language is required'),
+    learningLanguage: z.string().min(1, 'Learning language is required')
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  })
+  ;
+
+type SignUpData = z.infer<typeof signUpSchema>;
 
 export default function SignUpPage() {
+  const { user, setUser, logout } = useAuth()
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [agreeToTerms, setAgreeToTerms] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+type RegisterResponse = {
+  user: {
+    id: string
+    email: string
+    firstName: string
+    lastName: string
+    nativeLanguage: string
+    learningLanguage: string
+  }
+  token: string
+}
+
+  const registerUser = useMutation({
+    ...authControllerRegisterMutation()
+  });
+
+  const {
+    register,
+    handleSubmit,
+    formState: {errors},
+    control,
+  } = useForm<SignUpData>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      nativeLanguage: "",
+      learningLanguage: "",
+    }
+  })
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -22,12 +126,7 @@ export default function SignUpPage() {
     nativeLanguage: "",
     learningLanguage: "",
   })
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [agreeToTerms, setAgreeToTerms] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
-
+  
   const languages = [
     "English",
     "Spanish",
@@ -43,70 +142,47 @@ export default function SignUpPage() {
     "Hindi",
   ]
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
-
-    // Basic validation
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
-      setIsLoading(false)
-      return
-    }
-
-    if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters long")
-      setIsLoading(false)
-      return
-    }
+  const onSubmit = async (data: SignUpData) => {
+    setIsSubmitting(true);
 
     if (!agreeToTerms) {
-      setError("Please agree to the Terms of Service and Privacy Policy")
-      setIsLoading(false)
+      setError("You must agree to the terms and conditions")
       return
     }
 
-    // Simulate API call
     try {
-      const res = await fetch("http://localhost:5000/auth/register", {
-        method:'POST',
-        headers: {"Content-Type": "application/json"},
-        credentials:"include",
-        body: JSON.stringify(formData),
-      });
+      const response = await registerUser.mutateAsync({
+        body: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        password: data.password,
+        nativeLanguage: data.nativeLanguage,
+        learningLanguage: data.learningLanguage,
+        }
+      }) as RegisterResponse;
 
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.message || "Registration failed");
+      if (response.user) {
+        setUser(response.user);
+      }
+      if (response.token) {
+        localStorage.setItem("authToken", response.token);
       }
 
-      const {token} = await res.json();
-      // store token (HttpOnly cookie ideally: here for demo)
-      localStorage.setItem("token", token)
+      router.push("/auth/verification-sent");
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.message || "An error occurred during registration";
+      setError(errorMessage);
+  }
+}
 
-
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-      // Redirect to dashboard on success
-      window.location.href = "/dashboard"
-    } catch (err) {
-      setError("An error occurred during registration")
-    } finally {
-      setIsLoading(false)
-    }
+  const handleSocialSignUp = (provider: "google" | "apple") => {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/${provider}`;
   }
 
-  const handleSocialSignUp = (provider: string) => {
-    console.log(`Sign up with ${provider}`)
-    // Implement social sign up logic
-  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100  items-center justify-center p-4 flex">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100  items-center justify-center p-4 flex">
       <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
         <div className="flex justify-center lg:justify-end">
         <Card className="shadow-xl">
@@ -124,7 +200,33 @@ export default function SignUpPage() {
             )}
 
             {/* Sign Up Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    placeholder="John"
+                    disabled={isSubmitting}
+                    {...register("firstName")}
+                  />
+                </div>
+                {errors.firstName && (
+                  <p className="text-sm text-red-600">{errors.firstName.message}</p>
+                )}
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    placeholder="Doe"
+                    disabled={isSubmitting}
+                    {...register("lastName")}
+                  />
+                </div>
+                {errors.lastName && (
+                  <p className="text-sm text-red-600">{errors.lastName.message}</p>
+                )}
+              </div>
               {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -134,54 +236,74 @@ export default function SignUpPage() {
                     id="email"
                     type="email"
                     placeholder="john@example.com"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
                     className="pl-10"
                     required
-                    disabled={isLoading}
+                    disabled={isSubmitting}
+                    {...register("email")}
                   />
                 </div>
+                {errors.email && (
+                  <p className="text-sm text-red-600">{errors.email.message}</p>
+                )}
               </div>
 
               {/* Language Selection */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="nativeLanguage">Native Language</Label>
-                  <Select
-                    value={formData.nativeLanguage}
-                    onValueChange={(value) => handleInputChange("nativeLanguage", value)}
-                    disabled={isLoading}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {languages.map((language) => (
-                        <SelectItem key={language} value={language}>
-                          {language}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="nativeLanguage"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={isSubmitting}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select language" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {languages.map((language) => (
+                            <SelectItem key={language} value={language}>
+                              {language}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {errors.nativeLanguage && (
+                    <p className="text-sm text-red-600">{errors.nativeLanguage.message}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="learningLanguage">Learning Language</Label>
-                  <Select
-                    value={formData.learningLanguage}
-                    onValueChange={(value) => handleInputChange("learningLanguage", value)}
-                    disabled={isLoading}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {languages.map((language) => (
-                        <SelectItem key={language} value={language}>
-                          {language}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="learningLanguage"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={isSubmitting}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select language" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {languages.map((language) => (
+                            <SelectItem key={language} value={language}>
+                              {language}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {errors.learningLanguage && (
+                    <p className="text-sm text-red-600">{errors.learningLanguage.message}</p>
+                  )}
                 </div>
               </div>
 
@@ -194,21 +316,22 @@ export default function SignUpPage() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Create a strong password"
-                    value={formData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
                     className="pl-10 pr-10"
-                    required
-                    disabled={isLoading}
+                    disabled={isSubmitting}
+                    {...register("password")}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    disabled={isLoading}
+                    disabled={isSubmitting}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="text-sm text-red-600">{errors.password.message}</p>
+                )}
               </div>
 
               {/* Confirm Password */}
@@ -220,11 +343,9 @@ export default function SignUpPage() {
                     id="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm your password"
-                    value={formData.confirmPassword}
-                    onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                     className="pl-10 pr-10"
-                    required
-                    disabled={isLoading}
+                    disabled={isSubmitting}
+                    {...register("confirmPassword")}
                   />
                   <button
                     type="button"
@@ -243,7 +364,7 @@ export default function SignUpPage() {
                   id="terms"
                   checked={agreeToTerms}
                   onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                   className="mt-1"
                 />
                 <Label htmlFor="terms" className="text-sm font-normal leading-5">
@@ -258,8 +379,8 @@ export default function SignUpPage() {
                 </Label>
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading || !agreeToTerms} onSubmit={handleSubmit}>
-                {isLoading ? (
+              <Button type="submit" className="w-full" disabled={isSubmitting || !agreeToTerms}>
+                {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Creating account...
