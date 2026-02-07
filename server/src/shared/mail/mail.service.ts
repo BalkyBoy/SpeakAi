@@ -84,7 +84,7 @@ export class MailService {
 
       if (error) {
         this.logger.error(`Error sending email to ${to}:`, error);
-        throw new Error(`Failed to send email: ${error.message}`);
+        throw  new Error(`Failed to send email: ${error.message}`);
       }
       
       this.logger.log(`Email sent successfully to ${to}: ${data?.id}`);

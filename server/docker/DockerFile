@@ -1,0 +1,52 @@
+FROM node:20-alpine AS builder
+
+RUN npm install -g pnpm
+
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml ./
+
+RUN pnpm install --frozen-lockfile
+
+COPY . .
+
+RUN pnpm prisma generate
+
+RUN pnpm build
+
+# Verify build output exists
+RUN ls -la dist/
+
+# Stage 2: Production
+FROM node:20-alpine AS runner
+
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl
+
+# Install pnpm in production image
+RUN npm install -g pnpm
+
+WORKDIR /app
+
+RUN addgroup -S app  && adduser -S app -G app
+
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/prisma ./prisma
+
+# Install only production dependecies
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts
+
+# Generate Prisma Client
+RUN pnpm prisma generate
+
+# Copy built application
+COPY --from=builder /app/dist ./dist
+
+# Change ownership to app user
+RUN chown -R app:app /app
+USER app
+
+ENV NODE_ENV=production
+
+CMD ["node", "dist/src/main.js"]
