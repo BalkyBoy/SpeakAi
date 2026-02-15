@@ -27,9 +27,13 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+
   const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',').map(url => url.trim())
-    : ['http://localhost:3000'];
+    : ['http://localhost:3000','https://speak-ai.xyz','http://nginx'];
+
+
 
   app.enableCors({
     origin: allowedOrigins,
