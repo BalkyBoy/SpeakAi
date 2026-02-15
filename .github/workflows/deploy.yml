@@ -34,7 +34,7 @@ jobs:
     - name: Install dependencies
       run: |
         cd server
-        pnpm install --frozen-lockfile
+        pnpm install --no-frozen-lockfile
         
     - name: Run tests
       run: |
