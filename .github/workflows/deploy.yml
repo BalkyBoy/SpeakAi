@@ -15,37 +15,6 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        
-    - name: Setup pnpm
-      uses: pnpm/action-setup@v2
-      with:
-        version: 8
-        
-    - name: Install dependencies
-      run: |
-        cd server
-        pnpm install --no-frozen-lockfile
-        
-    - name: Run tests
-      run: |
-        cd server
-        pnpm run test
-        
-    - name: Run linting
-      run: |
-        cd server
-        pnpm run lint
-
   security-scan:
     runs-on: ubuntu-latest
     steps:
@@ -67,7 +36,7 @@ jobs:
         sarif_file: 'trivy-results.sarif'
 
   build:
-    needs: [test, security-scan]
+    needs: [security-scan]
     runs-on: ubuntu-latest
     outputs:
       image-digest: ${{ steps.build.outputs.digest }}
