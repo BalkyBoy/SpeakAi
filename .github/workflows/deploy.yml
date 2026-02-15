@@ -52,7 +52,7 @@ jobs:
       id: build
       with:
         context: ./server
-        file: ./server/docker/Dockerfile
+        file:  docker/Dockerfile
         tags: speak-ai:${{ github.sha }}
         outputs: type=docker,dest=/tmp/speak-ai.tar
         cache-from: type=gha
