@@ -1,25 +1,184 @@
-name: Deploy to EC2
+name: Deploy to Production
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
 
+env:
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Deploy to EC2
-      uses: appleboy/ssh-action@v1.0.3
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
       with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        port: 22
-        script: |
-          cd ~/speak-ai/SpeakAi/server
-          git pull origin main
-          cd docker
-          docker compose -f docker-compose.prod.yml up -d --build
-          docker compose -f docker-compose.prod.yml logs --tail=50 app
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: server/package-lock.json
+        
+    - name: Install dependencies
+      run: |
+        cd server
+        npm ci
+        
+    - name: Run tests
+      run: |
+        cd server
+        npm run test
+        
+    - name: Run linting
+      run: |
+        cd server
+        npm run lint
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: './server'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  build:
+    needs: [test, security-scan]
+    runs-on: ubuntu-latest
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build and export
+      uses: docker/build-push-action@v5
+      id: build
+      with:
+        context: ./server
+        file: ./server/docker/Dockerfile
+        tags: speak-ai:${{ github.sha }}
+        outputs: type=docker,dest=/tmp/speak-ai.tar
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-image
+        path: /tmp/speak-ai.tar
+        retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: docker-image
+        path: /tmp
+        
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+        
+    - name: Copy files to server
+      run: |
+        scp -i ~/.ssh/id_rsa /tmp/speak-ai.tar ubuntu@${{ secrets.EC2_HOST }}:/tmp/
+        scp -i ~/.ssh/id_rsa -r server/deployment/ ubuntu@${{ secrets.EC2_HOST }}:~/speak-ai/
+        
+    - name: Deploy to EC2
+      run: |
+        ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+          set -e
+          
+          # Load new image
+          docker load -i /tmp/speak-ai.tar
+          docker tag speak-ai:${{ github.sha }} speak-ai:latest
+          
+          # Navigate to deployment directory
+          cd ~/speak-ai/deployment
+          
+          # Create backup of current deployment
+          if docker compose -f docker-compose-nginx.yml ps -q app > /dev/null 2>&1; then
+            echo "Creating backup..."
+            docker compose -f docker-compose-nginx.yml stop app
+            docker tag speak-ai:latest speak-ai:backup-$(date +%Y%m%d-%H%M%S) || true
+          fi
+          
+          # Deploy new version
+          echo "Deploying new version..."
+          docker compose -f docker-compose-nginx.yml up -d --no-deps app
+          
+          # Health check
+          echo "Performing health check..."
+          for i in {1..30}; do
+            if docker compose -f docker-compose-nginx.yml exec -T app curl -f http://localhost:5000/health > /dev/null 2>&1; then
+              echo "Health check passed"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "Health check failed, rolling back..."
+              docker compose -f docker-compose-nginx.yml stop app
+              docker tag speak-ai:backup-$(date +%Y%m%d)* speak-ai:latest || true
+              docker compose -f docker-compose-nginx.yml up -d --no-deps app
+              exit 1
+            fi
+            echo "Waiting for app to be ready... ($i/30)"
+            sleep 10
+          done
+          
+          # Cleanup old images
+          docker image prune -f
+          
+          # Show logs
+          docker compose -f docker-compose-nginx.yml logs --tail=50 app
+        EOF
+        
+    - name: Cleanup
+      if: always()
+      run: |
+        rm -f ~/.ssh/id_rsa
+        ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "rm -f /tmp/speak-ai.tar" || true
+
+  notify:
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+    - name: Notify deployment status
+      uses: 8398a7/action-slack@v3
+      if: always()
+      with:
+        status: ${{ job.status }}
+        channel: '#deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
