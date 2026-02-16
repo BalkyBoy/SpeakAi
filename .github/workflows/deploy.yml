@@ -56,6 +56,11 @@ jobs:
       # ------------------------
       # Setup SSH
       # ------------------------
+      - name: Debug connectivity
+        run: |
+                echo "Testing connection to ${{ secrets.EC2_HOST }}"
+                timeout 5 bash -c "</dev/tcp/${{ secrets.EC2_HOST }}/22" && echo "Port 22 reachable" || echo "Port 22 NOT reachable"
+
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
