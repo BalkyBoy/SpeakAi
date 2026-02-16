@@ -39,9 +39,6 @@ async function bootstrap() {
     origin: allowedOrigins,
     credentials: true,
   });
-
-  app.setGlobalPrefix('api/v1');
-
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT') ?? 5000; // Default to 5000 if not set
 

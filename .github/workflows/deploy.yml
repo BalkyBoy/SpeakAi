@@ -89,7 +89,8 @@ jobs:
     - name: Copy files to server
       run: |
         scp -i ~/.ssh/id_rsa /tmp/speak-ai.tar ubuntu@${{ secrets.EC2_HOST }}:/tmp/
-        scp -i ~/.ssh/id_rsa -r server/deployment/ ubuntu@${{ secrets.EC2_HOST }}:~/speak-ai/
+        ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "mkdir -p ~/speak-ai/SpeakAi/server"
+        scp -i ~/.ssh/id_rsa -r server/deployment/ ubuntu@${{ secrets.EC2_HOST }}:~/speak-ai/SpeakAi/server/
         
     - name: Deploy to EC2
       run: |
@@ -117,7 +118,7 @@ jobs:
           # Health check
           echo "Performing health check..."
           for i in {1..30}; do
-            if docker compose -f docker-compose-nginx.yml exec -T app curl -f http://localhost:5000/health > /dev/null 2>&1; then
+            if docker compose -f docker-compose-nginx.yml exec -T app curl -f http://localhost:5000/api/v1/health > /dev/null 2>&1; then
               echo "Health check passed"
               break
             fi
