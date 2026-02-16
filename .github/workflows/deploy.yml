@@ -101,7 +101,7 @@ jobs:
           docker tag speak-ai:${{ github.sha }} speak-ai:latest
           
           # Navigate to deployment directory
-          cd ~/speak-ai/SpeakAi/deployment
+          cd ~/speak-ai/SpeakAi/server/deployment
           
           # Create backup of current deployment
           if docker compose -f docker-compose-nginx.yml ps -q app > /dev/null 2>&1; then
