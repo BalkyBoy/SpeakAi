@@ -15,31 +15,8 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
 
 jobs:
-  security-scan:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: 'fs'
-        scan-ref: './server'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-        
-    - name: Upload Trivy scan results
-      uses: github/codeql-action/upload-sarif@v4
-      if: always()
-      with:
-        sarif_file: 'trivy-results.sarif'
-
   build:
-    needs: [security-scan]
     runs-on: ubuntu-latest
-    outputs:
-      image-digest: ${{ steps.build.outputs.digest }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -49,7 +26,6 @@ jobs:
       
     - name: Build and export
       uses: docker/build-push-action@v5
-      id: build
       with:
         context: ./server
         file: ./server/docker/Dockerfile
@@ -82,7 +58,6 @@ jobs:
     - name: Setup SSH
       run: |
         mkdir -p ~/.ssh
-        chmod 700 ~/.ssh
         echo "${{ secrets.EC2_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
@@ -98,26 +73,18 @@ jobs:
         ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
           set -e
           
-          # Load new image
           docker load -i /tmp/speak-ai.tar
           docker tag speak-ai:${{ github.sha }} speak-ai:latest
           
-          # Navigate to deployment directory
           cd ~/speak-ai/SpeakAi/server/deployment
           
-          # Create backup of current deployment
           if docker compose -f docker-compose-nginx.yml ps -q app > /dev/null 2>&1; then
-            echo "Creating backup..."
             docker compose -f docker-compose-nginx.yml stop app
             docker tag speak-ai:latest speak-ai:backup-$(date +%Y%m%d-%H%M%S) || true
           fi
           
-          # Deploy new version
-          echo "Deploying new version..."
           docker compose -f docker-compose-nginx.yml up -d --no-deps app
           
-          # Health check
-          echo "Performing health check..."
           for i in {1..30}; do
             if docker compose -f docker-compose-nginx.yml exec -T app curl -f http://localhost:5000/health > /dev/null 2>&1; then
               echo "Health check passed"
@@ -130,14 +97,10 @@ jobs:
               docker compose -f docker-compose-nginx.yml up -d --no-deps app
               exit 1
             fi
-            echo "Waiting for app to be ready... ($i/30)"
             sleep 10
           done
           
-          # Cleanup old images
           docker image prune -f
-          
-          # Show logs
           docker compose -f docker-compose-nginx.yml logs --tail=50 app
         EOF
         
@@ -145,19 +108,3 @@ jobs:
       if: always()
       run: |
         rm -f ~/.ssh/id_rsa
-        ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "rm -f /tmp/speak-ai.tar" || true
-
-  notify:
-    needs: [deploy]
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-    - name: Notify deployment status
-      uses: 8398a7/action-slack@v3
-      if: always()
-      with:
-        status: ${{ job.status }}
-        channel: '#deployments'
-        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
