@@ -2,7 +2,11 @@ name: Deploy to Production
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+    paths:
+      - 'server/**'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
 permissions:
@@ -11,11 +15,30 @@ permissions:
   actions: read
 
 env:
-  DOCKER_BUILDKIT: 1
-  COMPOSE_DOCKER_CLI_BUILD: 1
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      server: ${{ steps.filter.outputs.server }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Filter changes
+      id: filter
+      uses: dorny/paths-filter@v2
+      with:
+        filters: |
+          server:
+            - 'server/**'
+            - '.github/workflows/deploy.yml'
+
   build:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.server == 'true'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -42,7 +65,7 @@ jobs:
         retention-days: 1
 
   deploy:
-    needs: build
+    needs: [detect-changes, build]
     runs-on: ubuntu-latest
     environment: production
     steps:
