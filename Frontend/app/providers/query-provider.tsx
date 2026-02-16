@@ -1,12 +1,12 @@
 "use client"
 
-import { client } from "@/client/client.gen"
+import { client } from "../client/client.gen"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ReactNode, useState } from "react"
 
 export function QueryProvider({ children }: { children: ReactNode }) {
   client.setConfig({
-    baseUrl: 'http://localhost:5000', 
+    baseUrl: 'https://api.speak-ai.xyz', 
   })
   const [queryClient] = useState(
     () =>

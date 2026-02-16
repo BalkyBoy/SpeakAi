@@ -6,7 +6,7 @@ const config = defineConfig({
   output: {
     format: 'prettier',
     lint: 'eslint',
-    path: './client',
+    path: './app/client',
   },
   plugins: [
     ...defaultPlugins,

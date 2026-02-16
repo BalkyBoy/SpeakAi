@@ -14,7 +14,7 @@ import Link from "next/link";
 import * as z from "zod"
 import { useRouter } from "next/navigation"
 import { useMutation } from "@tanstack/react-query"
-import { authControllerRegisterMutation } from "@/client/@tanstack/react-query.gen"
+import { authControllerRegisterMutation } from "@/app/client/@tanstack/react-query.gen"
 import {Controller, useForm} from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from "@/app/providers/auth-provider"
