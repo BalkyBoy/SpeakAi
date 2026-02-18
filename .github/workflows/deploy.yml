@@ -5,11 +5,6 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  security-events: write
-  actions: read
-
 env:
   DOCKER_BUILDKIT: 1
   COMPOSE_DOCKER_CLI_BUILD: 1
@@ -29,7 +24,7 @@ jobs:
       with:
         context: ./server
         file: ./server/docker/Dockerfile
-        tags: speak-ai:${{ github.sha }}
+        tags: speak-ai:latest
         outputs: type=docker,dest=/tmp/speak-ai.tar
         cache-from: type=gha
         cache-to: type=gha,mode=max
@@ -44,7 +39,6 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    environment: production
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -58,52 +52,40 @@ jobs:
     - name: Setup SSH
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-      env:
-        EC2_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
          
-    - name: Copy files to server
+    - name: Copy Docker image to server
       run: |
         scp -i ~/.ssh/id_rsa /tmp/speak-ai.tar ubuntu@${{ secrets.EC2_HOST }}:/tmp/
-        ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} "mkdir -p ~/speak-ai/SpeakAi/server/deployment"
-        scp -i ~/.ssh/id_rsa -r server/deployment/ ubuntu@${{ secrets.EC2_HOST }}:~/speak-ai/SpeakAi/server/deployment/
         
     - name: Deploy to EC2
       run: |
         ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
           set -e
           
+          # Load the new image
           docker load -i /tmp/speak-ai.tar
-          docker tag speak-ai:${{ github.sha }} speak-ai:latest
           
-          cd ~/speak-ai/SpeakAi/server/deployment
+          # Navigate to docker directory
+          cd ~/speak-ai/SpeakAi/server/docker
           
-          if docker compose -f docker-compose-nginx.yml ps -q app > /dev/null 2>&1; then
-            docker compose -f docker-compose-nginx.yml stop app
-            docker tag speak-ai:latest speak-ai:backup-$(date +%Y%m%d-%H%M%S) || true
-          fi
+          # Deploy with docker compose
+          docker compose -f docker-compose.prod.yml up -d --build
           
-          docker compose -f docker-compose-nginx.yml up -d --no-deps app
+          # Wait for app to be healthy
+          echo "Waiting for application to start..."
+          sleep 10
           
-          for i in {1..30}; do
-            if docker compose -f docker-compose-nginx.yml exec -T app curl -f http://localhost:5000/health > /dev/null 2>&1; then
-              echo "Health check passed"
-              break
-            fi
-            if [ $i -eq 30 ]; then
-              echo "Health check failed, rolling back..."
-              docker compose -f docker-compose-nginx.yml stop app
-              docker tag speak-ai:backup-$(date +%Y%m%d)* speak-ai:latest || true
-              docker compose -f docker-compose-nginx.yml up -d --no-deps app
-              exit 1
-            fi
-            sleep 10
-          done
+          # Show logs
+          docker compose -f docker-compose.prod.yml logs --tail=50 app
           
+          # Cleanup old images
           docker image prune -f
-          docker compose -f docker-compose-nginx.yml logs --tail=50 app
+          
+          # Remove tar file
+          rm -f /tmp/speak-ai.tar
         EOF
         
     - name: Cleanup
