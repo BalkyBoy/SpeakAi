@@ -30,10 +30,8 @@ async function bootstrap() {
   app.getHttpAdapter().getInstance().set('trust proxy', 1);
 
   const allowedOrigins = process.env.ALLOWED_ORIGINS
-    ? process.env.ALLOWED_ORIGINS.split(',').map(url => url.trim())
-    : ['http://localhost:3000','https://speak-ai.xyz','http://nginx'];
-
-
+    ? process.env.ALLOWED_ORIGINS.split(',').map((url) => url.trim())
+    : ['http://localhost:3000', 'https://speak-ai.xyz', 'http://nginx'];
 
   app.enableCors({
     origin: allowedOrigins,
@@ -48,15 +46,15 @@ async function bootstrap() {
     .setVersion('1.0')
     .addBearerAuth()
     .build();
-    
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
-  
+
   await app.listen(port); // Use the port variable here
   console.log(`Application is running on: http://localhost:${port}/api/v1`);
 }
 
-bootstrap().catch(error => {
+bootstrap().catch((error) => {
   console.error('Error during application bootstrap:', error);
   process.exit(1);
 });

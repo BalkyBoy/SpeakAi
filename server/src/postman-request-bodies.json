@@ -1,0 +1,210 @@
+{
+  "auth_endpoints": {
+    "POST /auth/admin/login": {
+      "email": "admin@honeychatbot.com",
+      "password": "admin123"
+    },
+    "POST /auth/agent/login": {
+      "email": "agent@example.com",
+      "password": "password123"
+    }
+  },
+  "admin_endpoints": {
+    "POST /admin/conversations/bulk-assign": {
+      "assignments": [
+        {
+          "conversationId": "conv-uuid-1",
+          "agentId": "agent-uuid-1"
+        },
+        {
+          "conversationId": "conv-uuid-2",
+          "agentId": "agent-uuid-2"
+        }
+      ]
+    },
+    "PUT /admin/agents/:id/status": {
+      "status": "ONLINE"
+    },
+    "PUT /admin/configs/:key/:language": {
+      "value": "Updated configuration value"
+    },
+    "POST /admin/config": {
+      "key": "welcome_message",
+      "value": "Welcome to our chatbot!",
+      "category": "MESSAGES",
+      "language": "en"
+    },
+    "POST /admin/agents": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john.doe@example.com",
+      "password": "agent123",
+      "maxChats": 5,
+      "state": "Lagos",
+      "lga": "Ikeja",
+      "primaryLanguage": "English",
+      "secondaryLanguage": "Yoruba"
+    },
+    "POST /admin/agents/bulk-upload": {
+      "agents": [
+        {
+          "firstName": "Jane",
+          "lastName": "Smith",
+          "email": "jane.smith@example.com",
+          "state": "Abuja",
+          "lga": "Central",
+          "languages": "English,Hausa",
+          "maxChats": 5
+        },
+        {
+          "firstName": "Mike",
+          "lastName": "Johnson",
+          "email": "mike.johnson@example.com",
+          "state": "Rivers",
+          "lga": "Port Harcourt",
+          "languages": "English,Igbo",
+          "maxChats": 3
+        }
+      ]
+    },
+    "PUT /admin/agents/:id": {
+      "name": "Updated Agent Name",
+      "email": "updated.email@example.com",
+      "status": "ONLINE",
+      "maxChats": 10
+    },
+    "POST /admin/conversations/assign": {
+      "conversationId": "conv-uuid-123",
+      "agentId": "agent-uuid-456",
+      "priority": "HIGH"
+    },
+    "POST /admin/conversations/bulk-assign (v2)": {
+      "conversationIds": ["conv-1", "conv-2", "conv-3"],
+      "agentId": "agent-uuid-789",
+      "strategy": "LEAST_BUSY"
+    },
+    "PUT /admin/profile": {
+      "name": "Admin Name",
+      "email": "admin@example.com",
+      "profileImage": "https://example.com/image.jpg",
+      "currentPassword": "oldPassword123",
+      "newPassword": "newPassword456"
+    }
+  },
+  "agent_assignment_endpoints": {
+    "POST /agent-assignment/manual-assign": {
+      "conversationId": "conv-uuid-123",
+      "agentId": "agent-uuid-456",
+      "assignedBy": "admin-uuid-789"
+    },
+    "POST /agent-assignment/bulk-assign": {
+      "conversationIds": ["conv-1", "conv-2", "conv-3"],
+      "agentId": "agent-uuid-456",
+      "assignedBy": "admin-uuid-789"
+    }
+  },
+  "agents_endpoints": {
+    "POST /agents/login": {
+      "email": "agent@example.com",
+      "password": "password123"
+    },
+    "POST /agents/:agentId/conversations/:conversationId/message": {
+      "content": "Hello! How can I help you today?"
+    },
+    "PUT /agents/:id/status": {
+      "isOnline": true
+    }
+  },
+  "analytics_endpoints": {
+    "POST /analytics": {
+      "session_id": "session-uuid-123",
+      "user_id": "user-uuid-456",
+      "steps_completed": ["welcome", "language_selection", "main_menu"],
+      "widgets_interacted_with": ["button", "text_input"],
+      "flows_attempted": ["family_planning", "clinic_locator"],
+      "total_user_messages": 10,
+      "total_bot_messages": 12,
+      "total_button_clicks": 8,
+      "total_typed_responses": 2,
+      "session_abandonment_point": "payment_step",
+      "information_provided": ["name", "location", "age"],
+      "goals_achieved": ["found_clinic", "booked_appointment"],
+      "unresolved_concerns": ["payment_method"],
+      "satisfaction_rating": 4,
+      "average_response_time_seconds": 2.5,
+      "errors_encountered": ["network_timeout"]
+    }
+  },
+  "conversations_endpoints": {
+    "POST /conversations": {
+      "session_id": "session-uuid-123",
+      "user_id": "user-uuid-456",
+      "main_menu_option": "family_planning"
+    },
+    "PATCH /conversations/:id": {
+      "main_menu_option": "clinic_locator"
+    },
+    "POST /conversations/escalate": {
+      "conversationId": "conv-uuid-123",
+      "userId": "user-uuid-456"
+    },
+    "POST /conversations/queue-timeout": {
+      "conversationId": "conv-uuid-123",
+      "queueDuration": 300,
+      "userId": "user-uuid-456"
+    }
+  },
+  "notifications_endpoints": {
+    "POST /notifications/subscribe": {
+      "userId": "user-uuid-123",
+      "subscription": {
+        "endpoint": "https://fcm.googleapis.com/fcm/send/...",
+        "keys": {
+          "p256dh": "key-data-here",
+          "auth": "auth-data-here"
+        }
+      }
+    },
+    "POST /notifications/unsubscribe": {
+      "userId": "user-uuid-123",
+      "endpoint": "https://fcm.googleapis.com/fcm/send/..."
+    }
+  },
+  "responses_endpoints": {
+    "POST /responses": {
+      "user_id": "user-uuid-123",
+      "session_id": "session-uuid-456",
+      "conversation_id": "conv-uuid-789",
+      "response_category": "family_planning",
+      "response_type": "button_click",
+      "user_response": "I want to learn about contraceptives",
+      "response_value": "contraceptives_info",
+      "step_in_flow": "main_menu",
+      "available_options": ["contraceptives", "clinic_locator", "talk_to_agent"]
+    }
+  },
+  "storage_endpoints": {
+    "POST /chat-sessions/storage/:sessionId": {
+      "key": "user_preference",
+      "value": "dark_mode",
+      "ttl": 3600
+    }
+  },
+  "user_endpoints": {
+    "POST /user": {
+      "user_session_id": "session-uuid-123",
+      "user_name": "John Doe",
+      "user_email": "john.doe@example.com",
+      "user_avatar": "https://example.com/avatar.jpg"
+    },
+    "PATCH /user/session/:sessionId": {
+      "user_session_id": "session-uuid-123"
+    }
+  },
+  "whatsapp_endpoints": {
+    "POST /whatsapp/test-message": {
+      "to": "2348012345678",
+      "message": "Hello from the chatbot!"
+    }
+  }
+}

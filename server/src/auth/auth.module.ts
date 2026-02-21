@@ -6,6 +6,9 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { MailModule } from '../shared/mail/mail.module';
+import { ConfigModule } from '@nestjs/config';
+import { UserModule } from 'src/user/user.module';
+import { UserService } from 'src/user/user.service';
 
 @Module({
   imports: [
@@ -15,10 +18,12 @@ import { MailModule } from '../shared/mail/mail.module';
       signOptions: { expiresIn: '24h' },
     }),
     PrismaModule,
-    MailModule
+    MailModule,
+    ConfigModule,
+    UserModule
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, UserService],
   exports: [AuthService],
 })
 export class AuthModule {}

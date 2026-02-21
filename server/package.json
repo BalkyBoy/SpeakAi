@@ -2,7 +2,7 @@
   "name": "server",
   "version": "0.0.1",
   "description": "",
-  "author": "",
+  "author": "BalkyBoy",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
@@ -98,5 +98,18 @@
     "moduleNameMapping": {
       "^src/(.*)$": "<rootDir>/$1"
     }
-  }
+  },
+  "eslintConfig": {
+    "extends": [
+      "plugin:@typescript-eslint/recommended",
+      "prettier"
+    ],
+    "plugins": [
+      "prettier"
+    ],
+    "rules": {
+      "prettier/prettier": "error"
+    }
+  },
+  "type": "commonjs"
 }

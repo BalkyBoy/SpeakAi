@@ -1,6 +1,6 @@
+
 generator client {
   provider = "prisma-client-js"
-  output   =  "../generated/prisma/client"
 }
 
 datasource db {
@@ -34,8 +34,7 @@ model User {
   sessions      PracticeSession[]
   achievements  UserAchievement[]
   subscriptions Subscription[]
-
-  @@map("users")
+    @@map("users")
 }
 
 model UserPreferences {
