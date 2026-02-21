@@ -49,6 +49,10 @@ export type VerifyEmailDto = {
     token: string;
 };
 
+export type ResendVerificationDto = {
+    [key: string]: unknown;
+};
+
 export type ForgotPasswordDto = {
     /**
      * Email address to send reset link
@@ -87,7 +91,7 @@ export type AppControllerGetHelloData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/api/v1';
+    url: '/';
 };
 
 export type AppControllerGetHelloResponses = {
@@ -101,7 +105,7 @@ export type AuthControllerRegisterData = {
     body: RegisterDto;
     path?: never;
     query?: never;
-    url: '/api/v1/auth/register';
+    url: '/auth/register';
 };
 
 export type AuthControllerRegisterErrors = {
@@ -122,7 +126,7 @@ export type AuthControllerLoginData = {
     body: LoginDto;
     path?: never;
     query?: never;
-    url: '/api/v1/auth/login';
+    url: '/auth/login';
 };
 
 export type AuthControllerLoginErrors = {
@@ -143,7 +147,7 @@ export type AuthControllerVerifyEmailData = {
     body: VerifyEmailDto;
     path?: never;
     query?: never;
-    url: '/api/v1/auth/verify-email';
+    url: '/auth/verify-email';
 };
 
 export type AuthControllerVerifyEmailErrors = {
@@ -160,11 +164,22 @@ export type AuthControllerVerifyEmailResponses = {
     200: unknown;
 };
 
+export type AuthControllerResendVerificationData = {
+    body: ResendVerificationDto;
+    path?: never;
+    query?: never;
+    url: '/auth/resend-verification';
+};
+
+export type AuthControllerResendVerificationResponses = {
+    201: unknown;
+};
+
 export type AuthControllerForgotPasswordData = {
     body: ForgotPasswordDto;
     path?: never;
     query?: never;
-    url: '/api/v1/auth/forgot-password';
+    url: '/auth/forgot-password';
 };
 
 export type AuthControllerForgotPasswordResponses = {
@@ -178,7 +193,7 @@ export type AuthControllerResetPasswordData = {
     body: ResetPasswordDto;
     path?: never;
     query?: never;
-    url: '/api/v1/auth/reset-password';
+    url: '/auth/reset-password';
 };
 
 export type AuthControllerResetPasswordErrors = {
@@ -199,7 +214,7 @@ export type AuthControllerRefreshData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/api/v1/auth/refresh';
+    url: '/auth/refresh';
 };
 
 export type AuthControllerRefreshResponses = {
@@ -210,7 +225,7 @@ export type AuthControllerLogoutData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/api/v1/auth/logout';
+    url: '/auth/logout';
 };
 
 export type AuthControllerLogoutResponses = {
@@ -221,7 +236,7 @@ export type UserControllerFindAllData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/api/v1/user';
+    url: '/user';
 };
 
 export type UserControllerFindAllResponses = {
@@ -232,7 +247,7 @@ export type UserControllerCreateData = {
     body: CreateUserDto;
     path?: never;
     query?: never;
-    url: '/api/v1/user';
+    url: '/user';
 };
 
 export type UserControllerCreateResponses = {
@@ -245,7 +260,7 @@ export type UserControllerRemoveData = {
         id: string;
     };
     query?: never;
-    url: '/api/v1/user/{id}';
+    url: '/user/{id}';
 };
 
 export type UserControllerRemoveResponses = {
@@ -258,7 +273,7 @@ export type UserControllerFindOneData = {
         id: string;
     };
     query?: never;
-    url: '/api/v1/user/{id}';
+    url: '/user/{id}';
 };
 
 export type UserControllerFindOneResponses = {
@@ -271,7 +286,7 @@ export type UserControllerUpdateData = {
         id: string;
     };
     query?: never;
-    url: '/api/v1/user/{id}';
+    url: '/user/{id}';
 };
 
 export type UserControllerUpdateResponses = {
@@ -282,7 +297,7 @@ export type LessonControllerFindAllData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/api/v1/lesson';
+    url: '/lesson';
 };
 
 export type LessonControllerFindAllResponses = {
@@ -293,7 +308,7 @@ export type LessonControllerCreateData = {
     body: CreateLessonDto;
     path?: never;
     query?: never;
-    url: '/api/v1/lesson';
+    url: '/lesson';
 };
 
 export type LessonControllerCreateResponses = {
@@ -306,7 +321,7 @@ export type LessonControllerRemoveData = {
         id: string;
     };
     query?: never;
-    url: '/api/v1/lesson/{id}';
+    url: '/lesson/{id}';
 };
 
 export type LessonControllerRemoveResponses = {
@@ -319,7 +334,7 @@ export type LessonControllerFindOneData = {
         id: string;
     };
     query?: never;
-    url: '/api/v1/lesson/{id}';
+    url: '/lesson/{id}';
 };
 
 export type LessonControllerFindOneResponses = {
@@ -332,7 +347,7 @@ export type LessonControllerUpdateData = {
         id: string;
     };
     query?: never;
-    url: '/api/v1/lesson/{id}';
+    url: '/lesson/{id}';
 };
 
 export type LessonControllerUpdateResponses = {

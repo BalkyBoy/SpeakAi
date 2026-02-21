@@ -4,23 +4,18 @@ import { devtools, persist } from "zustand/middleware";
 interface Auth {
   email: string;
   token: string;
-  id: string;
-  firstName: string;
-  lastName: string;
-  nativeLanguage: string;
-  learningLanguage: string;
-  isLoggedIn: boolean;
+  id?: string | null;
+  firstName?: string;
+  lastName?: string;
+  nativeLanguage?: string;
+  learningLanguage?: string;
+  isEmailVerified?: boolean | null;
+  createdAt?: string | null
 }
 
 const initialAuth: Auth = {
   email: "",
   token: "",
-  id: "",
-  firstName: "",
-  lastName: "",
-  nativeLanguage: "",
-  learningLanguage: "",
-  isLoggedIn: false,
 };
 
 interface AuthState {

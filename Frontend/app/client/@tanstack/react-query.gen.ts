@@ -3,8 +3,8 @@
 import { type DefaultError, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { appControllerGetHello, authControllerForgotPassword, authControllerLogin, authControllerLogout, authControllerRefresh, authControllerRegister, authControllerResetPassword, authControllerVerifyEmail, lessonControllerCreate, lessonControllerFindAll, lessonControllerFindOne, lessonControllerRemove, lessonControllerUpdate, type Options, userControllerCreate, userControllerFindAll, userControllerFindOne, userControllerRemove, userControllerUpdate } from '../sdk.gen';
-import type { AppControllerGetHelloData, AuthControllerForgotPasswordData, AuthControllerLoginData, AuthControllerLogoutData, AuthControllerRefreshData, AuthControllerRegisterData, AuthControllerResetPasswordData, AuthControllerVerifyEmailData, LessonControllerCreateData, LessonControllerFindAllData, LessonControllerFindOneData, LessonControllerRemoveData, LessonControllerUpdateData, UserControllerCreateData, UserControllerFindAllData, UserControllerFindOneData, UserControllerRemoveData, UserControllerUpdateData } from '../types.gen';
+import { appControllerGetHello, authControllerForgotPassword, authControllerLogin, authControllerLogout, authControllerRefresh, authControllerRegister, authControllerResendVerification, authControllerResetPassword, authControllerVerifyEmail, lessonControllerCreate, lessonControllerFindAll, lessonControllerFindOne, lessonControllerRemove, lessonControllerUpdate, type Options, userControllerCreate, userControllerFindAll, userControllerFindOne, userControllerRemove, userControllerUpdate } from '../sdk.gen';
+import type { AppControllerGetHelloData, AuthControllerForgotPasswordData, AuthControllerLoginData, AuthControllerLogoutData, AuthControllerRefreshData, AuthControllerRegisterData, AuthControllerResendVerificationData, AuthControllerResetPasswordData, AuthControllerVerifyEmailData, LessonControllerCreateData, LessonControllerFindAllData, LessonControllerFindOneData, LessonControllerRemoveData, LessonControllerUpdateData, UserControllerCreateData, UserControllerFindAllData, UserControllerFindOneData, UserControllerRemoveData, UserControllerUpdateData } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -98,6 +98,23 @@ export const authControllerVerifyEmailMutation = (options?: Partial<Options<Auth
     const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<AuthControllerVerifyEmailData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await authControllerVerifyEmail({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Resend verification
+ */
+export const authControllerResendVerificationMutation = (options?: Partial<Options<AuthControllerResendVerificationData>>): UseMutationOptions<unknown, DefaultError, Options<AuthControllerResendVerificationData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<AuthControllerResendVerificationData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await authControllerResendVerification({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
