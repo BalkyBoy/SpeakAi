@@ -8,6 +8,7 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { native } from 'pg';
+import { ResendVerificationDto } from './dto/resend-verification.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -49,6 +50,16 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     return this.authService.verifyEmail(res, dto);
+  }
+
+  @Post('resend-verification')
+  @ApiOperation({summary: 'Resend verification'})
+  async resendVerification(
+    @Body() resendVerificationDto: ResendVerificationDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.authService.resendVerification(resendVerificationDto);
+    return { message: 'Verification link resent' };
   }
 
   @Post('forgot-password')
