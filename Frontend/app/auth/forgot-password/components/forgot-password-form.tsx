@@ -22,7 +22,7 @@ const forgotPasswordSchema = z.object({
 
 type ForgotPasswordData = z.infer<typeof forgotPasswordSchema>;
 
-export default function ForgotPasswordPage() {
+export default function ForgotPasswordForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
