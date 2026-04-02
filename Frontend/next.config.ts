@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   turbopack: {
-    root: 'C:\\Users\\Balky\\Desktop\\SpeakAi\\frontend',
+    root: process.cwd(),
   },
 };
 
