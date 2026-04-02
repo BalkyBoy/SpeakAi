@@ -5,10 +5,10 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { PrismaModule } from 'src/prisma/prisma.module';
-import { MailModule } from '../shared/mail/mail.module';
+import { MailModule } from '../../shared/mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
-import { UserModule } from 'src/user/user.module';
-import { UserService } from 'src/user/user.service';
+import { UserModule } from 'src/modules/user/user.module';
+import { UserService } from 'src/modules/user/user.service';
 
 @Module({
   imports: [

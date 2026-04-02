@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
-import { UserModule } from './user/user.module';
-import { LessonModule } from './lesson/lesson.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { UserModule } from './modules/user/user.module';
+import { LessonModule } from './modules/lesson/lesson.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { MailModule } from './shared/mail/mail.module';
 import { QueueModule } from './shared/queue/queue.module';

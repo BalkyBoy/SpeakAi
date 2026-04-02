@@ -144,18 +144,26 @@ export default function SignUpPage() {
   });
 
   const languages = [
-    "English",
-    "Spanish",
-    "French",
-    "German",
-    "Italian",
-    "Portuguese",
-    "Chinese (Mandarin)",
-    "Japanese",
-    "Korean",
-    "Arabic",
-    "Russian",
-    "Hindi",
+    "Amharic",
+    "Swahili",
+    "Yoruba",
+    "Igbo",
+    "Hausa",
+    "Somali",
+    "Oromo",
+    "Tigrinya",
+    "Zulu",
+    "Xhosa",
+    "Afrikaans",
+    "Sesotho",
+    "Setswana",
+    "Shona",
+    "Nyanja",
+    "Luganda",
+    "Kinyarwanda",
+    "Malagasy",
+    "Wolof",
+    "Akan",
   ];
 
   const onSubmit = async (data: SignUpData) => {

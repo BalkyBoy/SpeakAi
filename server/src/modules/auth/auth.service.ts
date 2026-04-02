@@ -13,10 +13,10 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { MailService } from '../shared/mail/mail.service';
+import { MailService } from '../../shared/mail/mail.service';
 import { Response } from 'express';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
-import { UserService } from 'src/user/user.service';
+import { UserService } from 'src/modules/user/user.service';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -203,7 +203,7 @@ export class AuthService {
     await this.mailService.sendMail({
           to: user.email,
           subject: 'Verify your account',
-          template: 'email-verification',
+          template: 'verify-email',
           context: { verificationUrl, firstName: user.firstName },
         });
   }
