@@ -93,7 +93,7 @@ jobs:
           cd ~/speak-ai/SpeakAi
 
           # Login to GHCR
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "\$USER" --password-stdin
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
           # Pull latest image
           echo "📦 Pulling latest image..."
