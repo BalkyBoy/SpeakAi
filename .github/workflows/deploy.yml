@@ -19,7 +19,7 @@ jobs:
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
-      app: ${{ steps.detect.outputs.changes }}
+      app: ${{ steps.filter.outputs.changes }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
