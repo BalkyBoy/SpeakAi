@@ -176,14 +176,22 @@ model Subscription {
 
   @@map("subscriptions")
 }
+model Category {
+  id      String           @id @default(cuid())
+  name    String           @unique
+  slug    String           @unique
+  lessons LessonCategory[]
+
+  @@map("categories")
+}
 
 model LessonCategory {
-  id       String @id @default(cuid())
-  name     String @unique
-  lessonId String
+  lessonId   String
+  categoryId String
+  lesson     Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
-  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-
+  @@id([lessonId, categoryId])   // composite PK, no separate id needed
   @@map("lesson_categories")
 }
 

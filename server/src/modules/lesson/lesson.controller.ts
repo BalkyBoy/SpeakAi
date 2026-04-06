@@ -1,34 +1,43 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, UseGuards, Query } from '@nestjs/common';
 import { LessonService } from './lesson.service';
-import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { CurrentUser } from 'src/common/decorators';
+import type { User } from '@prisma/client';
+import { SearchLessonDto } from './dto/search-lesson.dto';
 
 @Controller('lesson')
+@UseGuards(JwtAuthGuard)
 export class LessonController {
-  constructor(private readonly lessonService: LessonService) {}
+  constructor(private readonly lessonService: LessonService) { }
 
-  @Post()
-  create(@Body() createLessonDto: CreateLessonDto) {
-    return this.lessonService.create(createLessonDto);
+
+  @Get('recommend')
+  getRecommended(@CurrentUser() user: User) {
+    return this.lessonService.getRecommendedLessons(user.id);
   }
 
-  @Get()
-  findAll() {
-    return this.lessonService.findAll();
+  @Get('search')
+  search(@Query() dto: SearchLessonDto, @CurrentUser() user: User) {
+    return this.lessonService.searchLessons(dto, user.id);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.lessonService.findOne(+id);
+  getLessonById(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.lessonService.getLessonById(id, user.id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateLessonDto: UpdateLessonDto) {
-    return this.lessonService.update(+id, updateLessonDto);
+  @Post(':id/start')
+  startLesson(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.lessonService.startLesson(id, user.id);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.lessonService.remove(+id);
+  @Put('id/progress')
+  updateProgress(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+    @Body() dto: UpdateLessonDto,
+  ) {
+    return this.lessonService.updateProgress(id, user.id, dto);
   }
 }

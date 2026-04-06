@@ -10,13 +10,15 @@ import { QueueModule } from './shared/queue/queue.module';
 import { BullModule } from '@nestjs/bull';
 import { BullBoardModule } from '@bull-board/nestjs';
 import { ExpressAdapter } from '@bull-board/express';
+import { ConfigModule } from '@nestjs/config';
+import appConfig from './config/app.config';
 
 @Module({
   imports: [
-    AuthModule, 
-    UserModule, 
+    AuthModule,
+    UserModule,
     LessonModule,
-    PrismaModule, 
+    PrismaModule,
     MailModule,
     QueueModule,
     BullModule.forRoot({
@@ -29,8 +31,12 @@ import { ExpressAdapter } from '@bull-board/express';
       route: '/admin/queues',
       adapter: ExpressAdapter,
     }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [appConfig]
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

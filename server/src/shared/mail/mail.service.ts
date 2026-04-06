@@ -26,10 +26,10 @@ export class MailService {
     const isDevelopment = process.env.NODE_ENV !== 'production';
 
     if(isDevelopment){
-      return join(process.cwd(), 'src', 'mail', 'templates');
+      return join(process.cwd(), 'src', 'shared', 'mail', 'templates');
     }
 
-    return join(process.cwd(), 'dist', 'mail', 'templates');
+    return join(process.cwd(), 'dist', 'shared', 'mail', 'templates');
   }
 
   private compileTemplate(
@@ -37,29 +37,11 @@ export class MailService {
     context: Record<string, any> = {},
   ): string {
     try {
-      // For now, return a simple HTML template since handlebars is not available
-      if (templateName === 'verify-email') {
-        return `
-          <h2>Verify Your Email</h2>
-          <p>Hello ${context.firstName || ''},</p>
-          <p>Please click the link below to verify your email address:</p>
-          <a href="${context.verificationUrl}" style="background-color: #007AFF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a>
-          <p>If you didn't create an account, you can safely ignore this email.</p>
-        `;
-      }
-      
-      if (templateName === 'reset-password') {
-        return `
-          <h2>Reset Your Password</h2>
-          <p>Hello ${context.firstName || ''},</p>
-          <p>Please click the link below to reset your password:</p>
-          <a href="${context.resetUrl}" style="background-color: #007AFF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a>
-          <p>If you didn't request this, you can safely ignore this email.</p>
-        `;
-      }
-      
-      // Default template
-      return `<p>Email content</p>`;
+      const templatePath = join(this.templatesDir, `${templateName}.hbs`);
+      const templateContent = readFileSync(templatePath, 'utf-8');
+      const template = handlebars.compile(templateContent);
+      const html = template(context);
+      return html;
     } catch (error) {
       this.logger.error(`Error compiling template ${templateName}:`, error);
       return `<p>Email content</p>`;
