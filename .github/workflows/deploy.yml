@@ -3,105 +3,119 @@ name: Deploy to Production
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
+    paths:
+      - 'server/**'
+      - '.github/workflows/deploy.yml'
 
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
 env:
-  DOCKER_BUILDKIT: 1
-  COMPOSE_DOCKER_CLI_BUILD: 1
+  REGISTRY: ghcr.io
+  IMAGE_NAME: BalkyBoy/SpeakAi
 
 jobs:
-  build:
+
+  detect-changes:
     runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.detect.outputs.changes }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Detect changes in server directory
+      uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          app:
+            - 'server/**'
+  build:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.app == 'true'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-      
-    - name: Build and export
-      uses: docker/build-push-action@v5
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v3
       with:
         context: ./server
         file: ./server/docker/Dockerfile
-        tags: speak-ai:latest
-        outputs: type=docker,dest=/tmp/speak-ai.tar
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: docker-image
-        path: /tmp/speak-ai.tar
-        retention-days: 1
-
+        push: true
+        tags: |
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
   deploy:
-    needs: build
+    needs: [detect-changes, build]
     runs-on: ubuntu-latest
+    if: |
+      always() &&
+      (needs.build.result == 'success' || needs.build.result == 'skipped') &&
+      (needs.detect-changes.outputs.app == 'true')
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Download artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: docker-image
-        path: /tmp
-        
-    - name: Setup SSH
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-         
-    - name: Copy Docker image to server
-      run: |
-        scp -i ~/.ssh/id_rsa /tmp/speak-ai.tar ubuntu@${{ secrets.EC2_HOST }}:/tmp/
-        
-    - name: Deploy to EC2
-      run: |
-        ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to EC2
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} << EOF
           set -e
-          
-          # Load the new image
-          docker load -i /tmp/speak-ai.tar
-          
-          # Navigate to server directory
+
+          echo "🚀 Starting deployment..."
+
           cd ~/speak-ai/SpeakAi
-          
-          # Configure git with authentication
-          git config --global credential.helper store
-          echo "https://${{ secrets.GITHUB_TOKEN }}@github.com" > ~/.git-credentials
-          
-          # Pull latest updates from repository
-          git pull origin main
-          
-          # Navigate to docker directory
-          cd server/docker
-          
-          # Stop and remove existing containers to force restart
-          docker compose -f docker-compose.prod.yml down
-          
-          # Deploy with docker compose (recreate containers)
-          docker compose -f docker-compose.prod.yml up -d
-          
-          # Wait for app to be healthy
-          echo "Waiting for application to start..."
-          sleep 10
-          
-          # Show logs
-          docker compose -f docker-compose.prod.yml logs --tail=50 app
-          
-          # Cleanup old images
+
+          # Login to GHCR
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "\$USER" --password-stdin
+
+          # Pull latest image
+          echo "📦 Pulling latest image..."
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$IMAGE_TAG
+
+          # Set image for docker-compose
+          export COMPOSE_APP_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$IMAGE_TAG
+
+          # Restart app only
+          echo "🔄 Restarting app..."
+          docker compose -f server/docker/docker-compose.prod.yml up -d --no-deps app
+
+          # Optional: run migrations
+          echo "⏳ Running migrations..."
+          docker compose -f server/docker/docker-compose.prod.yml up migrate --wait --wait-timeout 120 || true
+
+          # Cleanup
           docker image prune -f
-          
-          # Remove tar file
-          rm -f /tmp/speak-ai.tar
-        EOF
-        
-    - name: Cleanup
-      if: always()
-      run: |
-        rm -f ~/.ssh/id_rsa
+
+          echo "✅ Deployment successful!"
+          EOF
+
+      - name: Cleanup SSH
+        if: always()
+        run: rm -f ~/.ssh/id_rsa
