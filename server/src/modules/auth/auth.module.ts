@@ -9,6 +9,7 @@ import { MailModule } from '../../shared/mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from 'src/modules/user/user.module';
 import { UserService } from 'src/modules/user/user.service';
+import { QueueModule } from 'src/shared/queue/queue.module';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { UserService } from 'src/modules/user/user.service';
     PrismaModule,
     MailModule,
     ConfigModule,
-    UserModule
+    UserModule,
+    QueueModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, UserService],

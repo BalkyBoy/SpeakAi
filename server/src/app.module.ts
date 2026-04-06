@@ -11,6 +11,7 @@ import { BullModule } from '@nestjs/bull';
 import { BullBoardModule } from '@bull-board/nestjs';
 import { ExpressAdapter } from '@bull-board/express';
 import { ConfigModule } from '@nestjs/config';
+import { SpeechModule } from './speech/speech.module';
 import appConfig from './config/app.config';
 
 @Module({
@@ -35,6 +36,7 @@ import appConfig from './config/app.config';
       isGlobal: true,
       load: [appConfig]
     }),
+    SpeechModule,
   ],
   controllers: [AppController],
   providers: [AppService],

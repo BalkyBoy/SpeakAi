@@ -18,6 +18,8 @@ import { Response } from 'express';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { UserService } from 'src/modules/user/user.service';
 import { ConfigService } from '@nestjs/config';
+import { InjectQueue } from '@nestjs/bull';
+import  type { Queue } from 'bull';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +28,8 @@ export class AuthService {
     private prisma: PrismaService,
     private mailService: MailService,
     private userService: UserService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    @InjectQueue('mail') private mailQueue: Queue
   ) {}
 
   setAuthCookie(res: Response, accesstoken: string, refreshToken: string) {
@@ -101,19 +104,21 @@ export class AuthService {
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
       const verificationUrl = `${frontendUrl}/auth/verify-email?token=${emailToken}`;
 
-      console.log('Sending email directly...');
-      try {
-        await this.mailService.sendMail({
+      await this.mailQueue.add(
+        'sendEmail',
+        {
           to: user.email,
-          subject: 'Verify your email',
-          template: 'verify-email',
-          context: { verificationUrl, firstName: user.firstName },
-        });
-        console.log('Email sent successfully');
-      } catch (emailError) {
-        console.error('Failed to send email:', emailError);
-        // Don't fail registration if email fails
-      }
+          subject: 'Verify your account',
+          template: 'email-verification',
+          context: { firstName: user.firstName, verificationUrl },
+        },
+        {
+          attempts: 3,
+          backoff: 5000,
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      );
       return {
         message: 'Registered. Verify your email.',
         verificationUrl,
@@ -200,12 +205,25 @@ export class AuthService {
     const frontendUrl = this.configService.get<string>('app.frontendUrl');
     const verificationUrl = `${frontendUrl}/auth/verify-email?token=${emailVerificationToken}`;
     
-    await this.mailService.sendMail({
-          to: user.email,
-          subject: 'Verify your account',
-          template: 'verify-email',
-          context: { verificationUrl, firstName: user.firstName },
-        });
+
+    await this.mailQueue.add('sendEmail',
+      {
+        to: user.email,
+        subject: 'Verify your email',
+        template: 'email-verification',
+        context: {firstName: user.firstName, verificationUrl},
+      },
+      {
+        attempts: 3,
+        backoff: 5000,
+        removeOnComplete: true,
+        removeOnFail: false,
+      }
+    );
+
+    return {
+      message: 'Verification email sent successfully',
+    }
   }
 
  
@@ -232,17 +250,21 @@ export class AuthService {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const resetUrl = `${frontendUrl}/auth/reset-password?token=${resetToken}`;
 
-    try {
-      await this.mailService.sendMail({
+    void this.mailQueue.add(
+      'sendEmail',
+      {
         to: user.email,
-        subject: 'Reset your password',
-        template: 'reset-password',
-        context: { resetUrl, firstName: user.firstName },
-      });
-    } catch (emailError) {
-      console.error('Failed to send reset email:', emailError);
-    }
-
+        subject: 'Reset Your Password',
+        template: 'password-reset',
+        context: { firstName: user.firstName, resetUrl },
+      },
+      {
+        attempts: 3,
+        backoff: 5000,
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    );
     return { message: 'Reset password link sent', resetUrl };
   }
 
