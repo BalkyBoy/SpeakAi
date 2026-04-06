@@ -71,6 +71,10 @@ jobs:
           # Navigate to server directory
           cd ~/speak-ai/SpeakAi
           
+          # Configure git with authentication
+          git config --global credential.helper store
+          echo "https://${{ secrets.GITHUB_TOKEN }}@github.com" > ~/.git-credentials
+          
           # Pull latest updates from repository
           git pull origin main
           
