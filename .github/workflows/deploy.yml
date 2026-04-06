@@ -71,8 +71,11 @@ jobs:
           # Navigate to docker directory
           cd ~/speak-ai/SpeakAi/server/docker
           
-          # Deploy with docker compose
-          docker compose -f docker-compose.prod.yml up -d --build
+          # Stop and remove existing containers to force restart
+          docker compose -f docker-compose.prod.yml down
+          
+          # Deploy with docker compose (recreate containers)
+          docker compose -f docker-compose.prod.yml up -d
           
           # Wait for app to be healthy
           echo "Waiting for application to start..."
