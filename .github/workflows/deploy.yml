@@ -68,8 +68,14 @@ jobs:
           # Load the new image
           docker load -i /tmp/speak-ai.tar
           
+          # Navigate to server directory
+          cd ~/speak-ai/SpeakAi
+          
+          # Pull latest updates from repository
+          git pull origin main
+          
           # Navigate to docker directory
-          cd ~/speak-ai/SpeakAi/server/docker
+          cd server/docker
           
           # Stop and remove existing containers to force restart
           docker compose -f docker-compose.prod.yml down
