@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: BalkyBoy/speakai
+  IMAGE_NAME: balkyboy/speakai
 
 jobs:
 
