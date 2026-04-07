@@ -13,6 +13,7 @@ import { ExpressAdapter } from '@bull-board/express';
 import { ConfigModule } from '@nestjs/config';
 import { SpeechModule } from './speech/speech.module';
 import appConfig from './config/app.config';
+import { parse } from 'path';
 
 @Module({
   imports: [
@@ -24,8 +25,8 @@ import appConfig from './config/app.config';
     QueueModule,
     BullModule.forRoot({
       redis: {
-        host: 'localhost',
-        port: 6379,
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6379'),
       },
     }),
     BullBoardModule.forRoot({
