@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -23,12 +24,14 @@ import  type { Queue } from 'bull';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     private jwtService: JwtService,
     private prisma: PrismaService,
     private mailService: MailService,
     private userService: UserService,
     private configService: ConfigService,
+    
     @InjectQueue('mail') private mailQueue: Queue
   ) {}
 
@@ -185,33 +188,34 @@ export class AuthService {
     return { message: 'Email verified successfully' };
   }
 
-  async resendVerification(resendVerificationDto: ResendVerificationDto) {
-    const user = await this.userService.findByEmail(resendVerificationDto.email);
-    if(!user) {
-      throw new NotFoundException('User not found');
-    }
+ async resendVerification(resendVerificationDto: ResendVerificationDto) {
+  this.logger.log(`Resend verification requested for email: ${resendVerificationDto.email}`);
 
-    if (user.isEmailVerified) {
-      throw new BadRequestException('Email already verified');
-    }
+  const user = await this.userService.findByEmail(resendVerificationDto.email);
+  if (!user) {
+    this.logger.warn(`No user found with email: ${resendVerificationDto.email}`);
+    throw new NotFoundException('User not found');
+  }
 
-    const emailVerificationToken = crypto.randomBytes(32).toString('hex');
+  if (user.isEmailVerified) {
+    this.logger.warn(`User with email ${resendVerificationDto.email} is already verified`);
+    throw new BadRequestException('Email is already verified');
+  }
+  const emailVerificationToken = crypto.randomBytes(32).toString('hex');
+  await this.userService.updateEmailVerification(user.id, emailVerificationToken);
+  this.logger.log(`Generated new email verification token for user ${user.id}`);
 
-    await this.userService.updateEmailVerification(
-      user.id,
-      emailVerificationToken
-    )
+  const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
+  const verificationUrl = `${frontendUrl}/auth/verify-email?token=${emailVerificationToken}`;
 
-    const frontendUrl = this.configService.get<string>('app.frontendUrl');
-    const verificationUrl = `${frontendUrl}/auth/verify-email?token=${emailVerificationToken}`;
-    
-
-    await this.mailQueue.add('sendEmail',
+  try {
+    await this.mailQueue.add(
+      'sendEmail',
       {
         to: user.email,
         subject: 'Verify your email',
-        template: 'email-verification',
-        context: {firstName: user.firstName, verificationUrl},
+        template  : 'email-verification',
+        context: { firstName: user.firstName, verificationUrl },
       },
       {
         attempts: 3,
@@ -220,12 +224,17 @@ export class AuthService {
         removeOnFail: false,
       }
     );
-
-    return {
-      message: 'Verification email sent successfully',
-    }
+    this.logger.log(`Email verification sent to ${user.email}`);
+  } catch (error) {
+    this.logger.error(
+      `Failed to queue verification email for ${user.email}`,
+      error instanceof Error ? error.stack : String(error),
+    );
+    throw error;
   }
 
+  return {message:'Verification email sent successfully'};
+ }
  
 
 
