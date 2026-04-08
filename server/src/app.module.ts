@@ -16,26 +16,29 @@ import appConfig from './config/app.config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [appConfig]
+    }),
     AuthModule,
     UserModule,
     LessonModule,
     PrismaModule,
     MailModule,
     QueueModule,
-    BullModule.forRoot({
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async () => ({
       redis: {
         host: process.env.REDIS_HOST || 'localhost',
         port: parseInt(process.env.REDIS_PORT || '6379'),
         password: process.env.REDIS_PASSWORD || undefined,
       },
     }),
+    }),
     BullBoardModule.forRoot({
       route: '/admin/queues',
       adapter: ExpressAdapter,
-    }),
-    ConfigModule.forRoot({
-      isGlobal: true,
-      load: [appConfig]
     }),
     SpeechModule,
   ],
