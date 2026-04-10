@@ -42,7 +42,7 @@ RUN pnpm prisma generate
 
 # Copy built application
 COPY --from=builder /app/dist ./dist
-
+COPY --from=builder /app/src/shared/mail/templates ./dist/shared/mail/templates
 # Change ownership to app user
 RUN chown -R app:app /app
 USER app
