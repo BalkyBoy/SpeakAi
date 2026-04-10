@@ -41,8 +41,8 @@ export const VerificationContent = ({
     const title = `Email verification ${isError ? 'failed' : 'successful'}`;
 
     return (
-        <div className="mb-4 text-center">
-            <div className={`mx-auto mb-4 flex h-16 items-center justify-center rounded-full ${isError ? 'bg-red-100' : 'bg-green-100'}`}>
+        <div className="mb-4 text-center items-center justify-center flex flex-col">
+            <div className={`mb-4 flex h-16 w-16 items-center justify-center rounded-full ${isError ? 'bg-red-100' : 'bg-green-100'}`}>
                 {isError ? (
                     <span className="text-red-600 text-2xl">!</span>
                 ) : (
