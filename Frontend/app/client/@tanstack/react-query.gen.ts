@@ -3,8 +3,8 @@
 import { type DefaultError, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { appControllerGetHello, authControllerForgotPassword, authControllerLogin, authControllerLogout, authControllerRefresh, authControllerRegister, authControllerResendVerification, authControllerResetPassword, authControllerVerifyEmail, lessonControllerCreate, lessonControllerFindAll, lessonControllerFindOne, lessonControllerRemove, lessonControllerUpdate, type Options, userControllerCreate, userControllerFindAll, userControllerFindOne, userControllerRemove, userControllerUpdate } from '../sdk.gen';
-import type { AppControllerGetHelloData, AuthControllerForgotPasswordData, AuthControllerLoginData, AuthControllerLogoutData, AuthControllerRefreshData, AuthControllerRegisterData, AuthControllerResendVerificationData, AuthControllerResetPasswordData, AuthControllerVerifyEmailData, LessonControllerCreateData, LessonControllerFindAllData, LessonControllerFindOneData, LessonControllerRemoveData, LessonControllerUpdateData, UserControllerCreateData, UserControllerFindAllData, UserControllerFindOneData, UserControllerRemoveData, UserControllerUpdateData } from '../types.gen';
+import { appControllerGetHello, authControllerForgotPassword, authControllerLogin, authControllerLogout, authControllerRefresh, authControllerRegister, authControllerResendVerification, authControllerResetPassword, authControllerVerifyEmail, lessonControllerGetLessonById, lessonControllerGetRecommended, lessonControllerSearch, lessonControllerStartLesson, lessonControllerUpdateProgress, type Options, speechControllerAnalyzeSpeech, speechControllerCompareSpeech, speechControllerCreate, speechControllerFindAll, speechControllerFindOne, speechControllerGenerateAudio, speechControllerGetPhonemes, speechControllerGetSupportedLanguages, speechControllerRemove, speechControllerUpdate, userControllerProfile, userControllerUpdateUserProfile } from '../sdk.gen';
+import type { AppControllerGetHelloData, AuthControllerForgotPasswordData, AuthControllerLoginData, AuthControllerLogoutData, AuthControllerRefreshData, AuthControllerRegisterData, AuthControllerResendVerificationData, AuthControllerResetPasswordData, AuthControllerVerifyEmailData, LessonControllerGetLessonByIdData, LessonControllerGetRecommendedData, LessonControllerSearchData, LessonControllerStartLessonData, LessonControllerUpdateProgressData, SpeechControllerAnalyzeSpeechData, SpeechControllerCompareSpeechData, SpeechControllerCreateData, SpeechControllerFindAllData, SpeechControllerFindOneData, SpeechControllerGenerateAudioData, SpeechControllerGetPhonemesData, SpeechControllerGetSupportedLanguagesData, SpeechControllerRemoveData, SpeechControllerUpdateData, UserControllerProfileData, UserControllerUpdateUserProfileData } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -187,11 +187,11 @@ export const authControllerLogoutMutation = (options?: Partial<Options<AuthContr
     return mutationOptions;
 };
 
-export const userControllerFindAllQueryKey = (options?: Options<UserControllerFindAllData>) => createQueryKey('userControllerFindAll', options);
+export const userControllerProfileQueryKey = (options?: Options<UserControllerProfileData>) => createQueryKey('userControllerProfile', options);
 
-export const userControllerFindAllOptions = (options?: Options<UserControllerFindAllData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof userControllerFindAllQueryKey>>({
+export const userControllerProfileOptions = (options?: Options<UserControllerProfileData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof userControllerProfileQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await userControllerFindAll({
+        const { data } = await userControllerProfile({
             ...options,
             ...queryKey[0],
             signal,
@@ -199,13 +199,13 @@ export const userControllerFindAllOptions = (options?: Options<UserControllerFin
         });
         return data;
     },
-    queryKey: userControllerFindAllQueryKey(options)
+    queryKey: userControllerProfileQueryKey(options)
 });
 
-export const userControllerCreateMutation = (options?: Partial<Options<UserControllerCreateData>>): UseMutationOptions<unknown, DefaultError, Options<UserControllerCreateData>> => {
-    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<UserControllerCreateData>> = {
+export const userControllerUpdateUserProfileMutation = (options?: Partial<Options<UserControllerUpdateUserProfileData>>): UseMutationOptions<unknown, DefaultError, Options<UserControllerUpdateUserProfileData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<UserControllerUpdateUserProfileData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await userControllerCreate({
+            const { data } = await userControllerUpdateUserProfile({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -216,25 +216,11 @@ export const userControllerCreateMutation = (options?: Partial<Options<UserContr
     return mutationOptions;
 };
 
-export const userControllerRemoveMutation = (options?: Partial<Options<UserControllerRemoveData>>): UseMutationOptions<unknown, DefaultError, Options<UserControllerRemoveData>> => {
-    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<UserControllerRemoveData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await userControllerRemove({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
+export const lessonControllerGetRecommendedQueryKey = (options?: Options<LessonControllerGetRecommendedData>) => createQueryKey('lessonControllerGetRecommended', options);
 
-export const userControllerFindOneQueryKey = (options: Options<UserControllerFindOneData>) => createQueryKey('userControllerFindOne', options);
-
-export const userControllerFindOneOptions = (options: Options<UserControllerFindOneData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof userControllerFindOneQueryKey>>({
+export const lessonControllerGetRecommendedOptions = (options?: Options<LessonControllerGetRecommendedData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof lessonControllerGetRecommendedQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await userControllerFindOne({
+        const { data } = await lessonControllerGetRecommended({
             ...options,
             ...queryKey[0],
             signal,
@@ -242,28 +228,14 @@ export const userControllerFindOneOptions = (options: Options<UserControllerFind
         });
         return data;
     },
-    queryKey: userControllerFindOneQueryKey(options)
+    queryKey: lessonControllerGetRecommendedQueryKey(options)
 });
 
-export const userControllerUpdateMutation = (options?: Partial<Options<UserControllerUpdateData>>): UseMutationOptions<unknown, DefaultError, Options<UserControllerUpdateData>> => {
-    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<UserControllerUpdateData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await userControllerUpdate({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
+export const lessonControllerSearchQueryKey = (options?: Options<LessonControllerSearchData>) => createQueryKey('lessonControllerSearch', options);
 
-export const lessonControllerFindAllQueryKey = (options?: Options<LessonControllerFindAllData>) => createQueryKey('lessonControllerFindAll', options);
-
-export const lessonControllerFindAllOptions = (options?: Options<LessonControllerFindAllData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof lessonControllerFindAllQueryKey>>({
+export const lessonControllerSearchOptions = (options?: Options<LessonControllerSearchData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof lessonControllerSearchQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await lessonControllerFindAll({
+        const { data } = await lessonControllerSearch({
             ...options,
             ...queryKey[0],
             signal,
@@ -271,42 +243,14 @@ export const lessonControllerFindAllOptions = (options?: Options<LessonControlle
         });
         return data;
     },
-    queryKey: lessonControllerFindAllQueryKey(options)
+    queryKey: lessonControllerSearchQueryKey(options)
 });
 
-export const lessonControllerCreateMutation = (options?: Partial<Options<LessonControllerCreateData>>): UseMutationOptions<unknown, DefaultError, Options<LessonControllerCreateData>> => {
-    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<LessonControllerCreateData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await lessonControllerCreate({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
+export const lessonControllerGetLessonByIdQueryKey = (options: Options<LessonControllerGetLessonByIdData>) => createQueryKey('lessonControllerGetLessonById', options);
 
-export const lessonControllerRemoveMutation = (options?: Partial<Options<LessonControllerRemoveData>>): UseMutationOptions<unknown, DefaultError, Options<LessonControllerRemoveData>> => {
-    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<LessonControllerRemoveData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await lessonControllerRemove({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const lessonControllerFindOneQueryKey = (options: Options<LessonControllerFindOneData>) => createQueryKey('lessonControllerFindOne', options);
-
-export const lessonControllerFindOneOptions = (options: Options<LessonControllerFindOneData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof lessonControllerFindOneQueryKey>>({
+export const lessonControllerGetLessonByIdOptions = (options: Options<LessonControllerGetLessonByIdData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof lessonControllerGetLessonByIdQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await lessonControllerFindOne({
+        const { data } = await lessonControllerGetLessonById({
             ...options,
             ...queryKey[0],
             signal,
@@ -314,13 +258,171 @@ export const lessonControllerFindOneOptions = (options: Options<LessonController
         });
         return data;
     },
-    queryKey: lessonControllerFindOneQueryKey(options)
+    queryKey: lessonControllerGetLessonByIdQueryKey(options)
 });
 
-export const lessonControllerUpdateMutation = (options?: Partial<Options<LessonControllerUpdateData>>): UseMutationOptions<unknown, DefaultError, Options<LessonControllerUpdateData>> => {
-    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<LessonControllerUpdateData>> = {
+export const lessonControllerStartLessonMutation = (options?: Partial<Options<LessonControllerStartLessonData>>): UseMutationOptions<unknown, DefaultError, Options<LessonControllerStartLessonData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<LessonControllerStartLessonData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await lessonControllerUpdate({
+            const { data } = await lessonControllerStartLesson({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const lessonControllerUpdateProgressMutation = (options?: Partial<Options<LessonControllerUpdateProgressData>>): UseMutationOptions<unknown, DefaultError, Options<LessonControllerUpdateProgressData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<LessonControllerUpdateProgressData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await lessonControllerUpdateProgress({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const speechControllerGetSupportedLanguagesQueryKey = (options?: Options<SpeechControllerGetSupportedLanguagesData>) => createQueryKey('speechControllerGetSupportedLanguages', options);
+
+export const speechControllerGetSupportedLanguagesOptions = (options?: Options<SpeechControllerGetSupportedLanguagesData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof speechControllerGetSupportedLanguagesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await speechControllerGetSupportedLanguages({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: speechControllerGetSupportedLanguagesQueryKey(options)
+});
+
+export const speechControllerGetPhonemesQueryKey = (options: Options<SpeechControllerGetPhonemesData>) => createQueryKey('speechControllerGetPhonemes', options);
+
+export const speechControllerGetPhonemesOptions = (options: Options<SpeechControllerGetPhonemesData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof speechControllerGetPhonemesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await speechControllerGetPhonemes({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: speechControllerGetPhonemesQueryKey(options)
+});
+
+export const speechControllerAnalyzeSpeechMutation = (options?: Partial<Options<SpeechControllerAnalyzeSpeechData>>): UseMutationOptions<unknown, DefaultError, Options<SpeechControllerAnalyzeSpeechData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<SpeechControllerAnalyzeSpeechData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await speechControllerAnalyzeSpeech({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const speechControllerCompareSpeechMutation = (options?: Partial<Options<SpeechControllerCompareSpeechData>>): UseMutationOptions<unknown, DefaultError, Options<SpeechControllerCompareSpeechData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<SpeechControllerCompareSpeechData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await speechControllerCompareSpeech({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const speechControllerGenerateAudioMutation = (options?: Partial<Options<SpeechControllerGenerateAudioData>>): UseMutationOptions<unknown, DefaultError, Options<SpeechControllerGenerateAudioData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<SpeechControllerGenerateAudioData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await speechControllerGenerateAudio({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const speechControllerFindAllQueryKey = (options?: Options<SpeechControllerFindAllData>) => createQueryKey('speechControllerFindAll', options);
+
+export const speechControllerFindAllOptions = (options?: Options<SpeechControllerFindAllData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof speechControllerFindAllQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await speechControllerFindAll({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: speechControllerFindAllQueryKey(options)
+});
+
+export const speechControllerCreateMutation = (options?: Partial<Options<SpeechControllerCreateData>>): UseMutationOptions<unknown, DefaultError, Options<SpeechControllerCreateData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<SpeechControllerCreateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await speechControllerCreate({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const speechControllerRemoveMutation = (options?: Partial<Options<SpeechControllerRemoveData>>): UseMutationOptions<unknown, DefaultError, Options<SpeechControllerRemoveData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<SpeechControllerRemoveData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await speechControllerRemove({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const speechControllerFindOneQueryKey = (options: Options<SpeechControllerFindOneData>) => createQueryKey('speechControllerFindOne', options);
+
+export const speechControllerFindOneOptions = (options: Options<SpeechControllerFindOneData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof speechControllerFindOneQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await speechControllerFindOne({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: speechControllerFindOneQueryKey(options)
+});
+
+export const speechControllerUpdateMutation = (options?: Partial<Options<SpeechControllerUpdateData>>): UseMutationOptions<unknown, DefaultError, Options<SpeechControllerUpdateData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DefaultError, Options<SpeechControllerUpdateData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await speechControllerUpdate({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

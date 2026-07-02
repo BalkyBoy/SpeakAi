@@ -6,9 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint . --ext .ts,.tsx --max-warnings 0",
     "codegen": "openapi-ts",
-    "openapi:generate": "openapi-ts -i https://api.speak-ai.xyz/docs-json -o src/client -c axios -p @hey-api/plugin-zod -p @hey-api/plugin-react-query"
+    "openapi:generate": "openapi-ts -o src/client -c axios -p @hey-api/plugin-zod -p @hey-api/plugin-react-query"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

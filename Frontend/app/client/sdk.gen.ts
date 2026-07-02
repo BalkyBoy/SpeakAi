@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AppControllerGetHelloData, AppControllerGetHelloResponses, AuthControllerForgotPasswordData, AuthControllerForgotPasswordResponses, AuthControllerLoginData, AuthControllerLoginErrors, AuthControllerLoginResponses, AuthControllerLogoutData, AuthControllerLogoutResponses, AuthControllerRefreshData, AuthControllerRefreshResponses, AuthControllerRegisterData, AuthControllerRegisterErrors, AuthControllerRegisterResponses, AuthControllerResendVerificationData, AuthControllerResendVerificationResponses, AuthControllerResetPasswordData, AuthControllerResetPasswordErrors, AuthControllerResetPasswordResponses, AuthControllerVerifyEmailData, AuthControllerVerifyEmailErrors, AuthControllerVerifyEmailResponses, LessonControllerCreateData, LessonControllerCreateResponses, LessonControllerFindAllData, LessonControllerFindAllResponses, LessonControllerFindOneData, LessonControllerFindOneResponses, LessonControllerRemoveData, LessonControllerRemoveResponses, LessonControllerUpdateData, LessonControllerUpdateResponses, UserControllerCreateData, UserControllerCreateResponses, UserControllerFindAllData, UserControllerFindAllResponses, UserControllerFindOneData, UserControllerFindOneResponses, UserControllerRemoveData, UserControllerRemoveResponses, UserControllerUpdateData, UserControllerUpdateResponses } from './types.gen';
+import type { AppControllerGetHelloData, AppControllerGetHelloResponses, AuthControllerForgotPasswordData, AuthControllerForgotPasswordResponses, AuthControllerLoginData, AuthControllerLoginErrors, AuthControllerLoginResponses, AuthControllerLogoutData, AuthControllerLogoutResponses, AuthControllerRefreshData, AuthControllerRefreshResponses, AuthControllerRegisterData, AuthControllerRegisterErrors, AuthControllerRegisterResponses, AuthControllerResendVerificationData, AuthControllerResendVerificationResponses, AuthControllerResetPasswordData, AuthControllerResetPasswordErrors, AuthControllerResetPasswordResponses, AuthControllerVerifyEmailData, AuthControllerVerifyEmailErrors, AuthControllerVerifyEmailResponses, LessonControllerGetLessonByIdData, LessonControllerGetLessonByIdResponses, LessonControllerGetRecommendedData, LessonControllerGetRecommendedResponses, LessonControllerSearchData, LessonControllerSearchResponses, LessonControllerStartLessonData, LessonControllerStartLessonResponses, LessonControllerUpdateProgressData, LessonControllerUpdateProgressResponses, SpeechControllerAnalyzeSpeechData, SpeechControllerAnalyzeSpeechResponses, SpeechControllerCompareSpeechData, SpeechControllerCompareSpeechResponses, SpeechControllerCreateData, SpeechControllerCreateResponses, SpeechControllerFindAllData, SpeechControllerFindAllResponses, SpeechControllerFindOneData, SpeechControllerFindOneResponses, SpeechControllerGenerateAudioData, SpeechControllerGenerateAudioResponses, SpeechControllerGetPhonemesData, SpeechControllerGetPhonemesResponses, SpeechControllerGetSupportedLanguagesData, SpeechControllerGetSupportedLanguagesResponses, SpeechControllerRemoveData, SpeechControllerRemoveResponses, SpeechControllerUpdateData, SpeechControllerUpdateResponses, UserControllerProfileData, UserControllerProfileResponses, UserControllerUpdateUserProfileData, UserControllerUpdateUserProfileResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -99,10 +99,10 @@ export const authControllerRefresh = <ThrowOnError extends boolean = false>(opti
 
 export const authControllerLogout = <ThrowOnError extends boolean = false>(options?: Options<AuthControllerLogoutData, ThrowOnError>) => (options?.client ?? client).post<AuthControllerLogoutResponses, unknown, ThrowOnError>({ url: '/auth/logout', ...options });
 
-export const userControllerFindAll = <ThrowOnError extends boolean = false>(options?: Options<UserControllerFindAllData, ThrowOnError>) => (options?.client ?? client).get<UserControllerFindAllResponses, unknown, ThrowOnError>({ url: '/user', ...options });
+export const userControllerProfile = <ThrowOnError extends boolean = false>(options?: Options<UserControllerProfileData, ThrowOnError>) => (options?.client ?? client).get<UserControllerProfileResponses, unknown, ThrowOnError>({ url: '/user/profile', ...options });
 
-export const userControllerCreate = <ThrowOnError extends boolean = false>(options: Options<UserControllerCreateData, ThrowOnError>) => (options.client ?? client).post<UserControllerCreateResponses, unknown, ThrowOnError>({
-    url: '/user',
+export const userControllerUpdateUserProfile = <ThrowOnError extends boolean = false>(options: Options<UserControllerUpdateUserProfileData, ThrowOnError>) => (options.client ?? client).put<UserControllerUpdateUserProfileResponses, unknown, ThrowOnError>({
+    url: '/user/{userId}',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -110,12 +110,16 @@ export const userControllerCreate = <ThrowOnError extends boolean = false>(optio
     }
 });
 
-export const userControllerRemove = <ThrowOnError extends boolean = false>(options: Options<UserControllerRemoveData, ThrowOnError>) => (options.client ?? client).delete<UserControllerRemoveResponses, unknown, ThrowOnError>({ url: '/user/{id}', ...options });
+export const lessonControllerGetRecommended = <ThrowOnError extends boolean = false>(options?: Options<LessonControllerGetRecommendedData, ThrowOnError>) => (options?.client ?? client).get<LessonControllerGetRecommendedResponses, unknown, ThrowOnError>({ url: '/lesson/recommend', ...options });
 
-export const userControllerFindOne = <ThrowOnError extends boolean = false>(options: Options<UserControllerFindOneData, ThrowOnError>) => (options.client ?? client).get<UserControllerFindOneResponses, unknown, ThrowOnError>({ url: '/user/{id}', ...options });
+export const lessonControllerSearch = <ThrowOnError extends boolean = false>(options?: Options<LessonControllerSearchData, ThrowOnError>) => (options?.client ?? client).get<LessonControllerSearchResponses, unknown, ThrowOnError>({ url: '/lesson/search', ...options });
 
-export const userControllerUpdate = <ThrowOnError extends boolean = false>(options: Options<UserControllerUpdateData, ThrowOnError>) => (options.client ?? client).patch<UserControllerUpdateResponses, unknown, ThrowOnError>({
-    url: '/user/{id}',
+export const lessonControllerGetLessonById = <ThrowOnError extends boolean = false>(options: Options<LessonControllerGetLessonByIdData, ThrowOnError>) => (options.client ?? client).get<LessonControllerGetLessonByIdResponses, unknown, ThrowOnError>({ url: '/lesson/{id}', ...options });
+
+export const lessonControllerStartLesson = <ThrowOnError extends boolean = false>(options: Options<LessonControllerStartLessonData, ThrowOnError>) => (options.client ?? client).post<LessonControllerStartLessonResponses, unknown, ThrowOnError>({ url: '/lesson/{id}/start', ...options });
+
+export const lessonControllerUpdateProgress = <ThrowOnError extends boolean = false>(options: Options<LessonControllerUpdateProgressData, ThrowOnError>) => (options.client ?? client).put<LessonControllerUpdateProgressResponses, unknown, ThrowOnError>({
+    url: '/lesson/id/progress',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -123,10 +127,12 @@ export const userControllerUpdate = <ThrowOnError extends boolean = false>(optio
     }
 });
 
-export const lessonControllerFindAll = <ThrowOnError extends boolean = false>(options?: Options<LessonControllerFindAllData, ThrowOnError>) => (options?.client ?? client).get<LessonControllerFindAllResponses, unknown, ThrowOnError>({ url: '/lesson', ...options });
+export const speechControllerGetSupportedLanguages = <ThrowOnError extends boolean = false>(options?: Options<SpeechControllerGetSupportedLanguagesData, ThrowOnError>) => (options?.client ?? client).get<SpeechControllerGetSupportedLanguagesResponses, unknown, ThrowOnError>({ url: '/speech/supported-languages', ...options });
 
-export const lessonControllerCreate = <ThrowOnError extends boolean = false>(options: Options<LessonControllerCreateData, ThrowOnError>) => (options.client ?? client).post<LessonControllerCreateResponses, unknown, ThrowOnError>({
-    url: '/lesson',
+export const speechControllerGetPhonemes = <ThrowOnError extends boolean = false>(options: Options<SpeechControllerGetPhonemesData, ThrowOnError>) => (options.client ?? client).get<SpeechControllerGetPhonemesResponses, unknown, ThrowOnError>({ url: '/speech/phonemes/{language}', ...options });
+
+export const speechControllerAnalyzeSpeech = <ThrowOnError extends boolean = false>(options: Options<SpeechControllerAnalyzeSpeechData, ThrowOnError>) => (options.client ?? client).post<SpeechControllerAnalyzeSpeechResponses, unknown, ThrowOnError>({
+    url: '/speech/analyze',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -134,12 +140,41 @@ export const lessonControllerCreate = <ThrowOnError extends boolean = false>(opt
     }
 });
 
-export const lessonControllerRemove = <ThrowOnError extends boolean = false>(options: Options<LessonControllerRemoveData, ThrowOnError>) => (options.client ?? client).delete<LessonControllerRemoveResponses, unknown, ThrowOnError>({ url: '/lesson/{id}', ...options });
+export const speechControllerCompareSpeech = <ThrowOnError extends boolean = false>(options: Options<SpeechControllerCompareSpeechData, ThrowOnError>) => (options.client ?? client).post<SpeechControllerCompareSpeechResponses, unknown, ThrowOnError>({
+    url: '/speech/compare',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
-export const lessonControllerFindOne = <ThrowOnError extends boolean = false>(options: Options<LessonControllerFindOneData, ThrowOnError>) => (options.client ?? client).get<LessonControllerFindOneResponses, unknown, ThrowOnError>({ url: '/lesson/{id}', ...options });
+export const speechControllerGenerateAudio = <ThrowOnError extends boolean = false>(options: Options<SpeechControllerGenerateAudioData, ThrowOnError>) => (options.client ?? client).post<SpeechControllerGenerateAudioResponses, unknown, ThrowOnError>({
+    url: '/speech/generate-audio',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
-export const lessonControllerUpdate = <ThrowOnError extends boolean = false>(options: Options<LessonControllerUpdateData, ThrowOnError>) => (options.client ?? client).patch<LessonControllerUpdateResponses, unknown, ThrowOnError>({
-    url: '/lesson/{id}',
+export const speechControllerFindAll = <ThrowOnError extends boolean = false>(options?: Options<SpeechControllerFindAllData, ThrowOnError>) => (options?.client ?? client).get<SpeechControllerFindAllResponses, unknown, ThrowOnError>({ url: '/speech', ...options });
+
+export const speechControllerCreate = <ThrowOnError extends boolean = false>(options: Options<SpeechControllerCreateData, ThrowOnError>) => (options.client ?? client).post<SpeechControllerCreateResponses, unknown, ThrowOnError>({
+    url: '/speech',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+export const speechControllerRemove = <ThrowOnError extends boolean = false>(options: Options<SpeechControllerRemoveData, ThrowOnError>) => (options.client ?? client).delete<SpeechControllerRemoveResponses, unknown, ThrowOnError>({ url: '/speech/{id}', ...options });
+
+export const speechControllerFindOne = <ThrowOnError extends boolean = false>(options: Options<SpeechControllerFindOneData, ThrowOnError>) => (options.client ?? client).get<SpeechControllerFindOneResponses, unknown, ThrowOnError>({ url: '/speech/{id}', ...options });
+
+export const speechControllerUpdate = <ThrowOnError extends boolean = false>(options: Options<SpeechControllerUpdateData, ThrowOnError>) => (options.client ?? client).patch<SpeechControllerUpdateResponses, unknown, ThrowOnError>({
+    url: '/speech/{id}',
     ...options,
     headers: {
         'Content-Type': 'application/json',

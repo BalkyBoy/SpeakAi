@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LoaderCircle, Mic, TrainTrack } from "lucide-react";
+import { Eye, EyeOff, LoaderCircle, Mic, TrainTrack } from "lucide-react";
 import Link from "next/link";
 import z, { email } from "zod";
 import { useAuthStore } from "@/store/use-auth-store";
@@ -16,6 +16,7 @@ import { useMutation } from "@tanstack/react-query";
 import { authControllerLoginMutation } from "@/app/client/@tanstack/react-query.gen";
 import { getApiErrorMessage } from "@/lib/get-api-error-message";
 import { toast } from "sonner";
+import { setAuthCookie } from "@/app/actions/set-auth-cookie";
 
 const signInSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email address"),
@@ -27,6 +28,7 @@ type SignInData = z.infer<typeof signInSchema>;
 export default function LoginForm() {
   const { setAuth } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const {
@@ -75,6 +77,8 @@ export default function LoginForm() {
       const response = res as LoginResponse;
       const userData = response?.data || response;
 
+     
+
       if (userData?.user?.isEmailVerified === false) {
         setAuth({
           email: data.email,
@@ -104,6 +108,10 @@ export default function LoginForm() {
         createdAt: userData?.user?.createdAt || null,
       };
       setAuth(authData);
+
+      if (userData?.accessToken) {
+        await setAuthCookie(userData.accessToken);
+      }
 
       const { client } = await import("@/app/client/client.gen");
       client.setConfig({
@@ -171,12 +179,23 @@ export default function LoginForm() {
             )}
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                {...register("password")}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  className="pr-10"
+                  {...register("password")}
+                />
+                <button
+                  type="button"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 transition-colors hover:text-blue-600 focus:outline-none"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? (

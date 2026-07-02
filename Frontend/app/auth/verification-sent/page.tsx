@@ -1,12 +1,11 @@
 "use client";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useResendEmailCooldown } from "../verify-email/hooks/use-resend-email-cooldown";
-import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const page = () => {
+const Page = () => {
   const { auth } = useAuthStore();
   const {
     handleResendEmail,
@@ -52,4 +51,4 @@ const page = () => {
     </div>
   );
 };
-export default page;
+export default Page;

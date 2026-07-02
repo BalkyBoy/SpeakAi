@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { authControllerVerifyEmailMutation } from "@/app/client/@tanstack/react-query.gen";
 import { getApiErrorMessage } from "@/lib/get-api-error-message";
-import { set } from "zod";
+
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { VerificationContent } from "./components/verification-content";
@@ -50,7 +50,7 @@ export function Screen() {
         }
     };
     verify();
-  }, [token]);
+  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div className="flex min-h-screen items-center justify-center bg-white px-6 py-12">
         <div className="w-full max-w-md">

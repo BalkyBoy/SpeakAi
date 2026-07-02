@@ -10,7 +10,7 @@ import { TrendingUp, Target, Award, Clock, Mic, ArrowLeft, Download } from "luci
 import Link from "next/link"
 
 export default function ProgressPage() {
-  const [selectedPeriod, setSelectedPeriod] = useState("week")
+  useState("week")
 
   const weeklyData = [
     { day: "Mon", accuracy: 78, time: 15 },

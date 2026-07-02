@@ -1,35 +1,118 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useAuth } from "@/app/providers/auth-provider"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Mic, Play, Trophy, Clock, Target, TrendingUp, BookOpen, Award, Calendar } from "lucide-react"
 import Link from "next/link"
+import { DashboardSkeleton } from "./components/dashboard-skeleton"
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface Lesson {
+  id: number
+  title: string
+  progress: number
+  difficulty: "Beginner" | "Intermediate" | "Advanced"
+  duration: string
+}
+
+interface Achievement {
+  id: number
+  title: string
+  description: string
+  earned: boolean
+}
+
+interface DashboardData {
+  streak: number
+  stats: { label: string; value: string; icon: React.ReactNode }[]
+  recentLessons: Lesson[]
+  achievements: Achievement[]
+}
+
+// ─── Mock API fetch (replace with your real endpoint) ─────────────────────────
+
+async function fetchDashboardData(userId: string): Promise<DashboardData> {
+  // Simulate network latency — swap this for a real fetch call:
+  // const res = await fetch(`/api/dashboard/${userId}`)
+  // return res.json()
+  await new Promise((r) => setTimeout(r, 1400))
+
+  return {
+    streak: 7,
+    stats: [
+      { label: "Total Practice Time", value: "24h 30m", icon: <Clock className="h-5 w-5" /> },
+      { label: "Lessons Completed",   value: "42",      icon: <BookOpen className="h-5 w-5" /> },
+      { label: "Average Accuracy",    value: "87%",     icon: <Target className="h-5 w-5" /> },
+      { label: "Current Streak",      value: "7 days",  icon: <TrendingUp className="h-5 w-5" /> },
+    ],
+    recentLessons: [
+      { id: 1, title: "English Vowel Sounds", progress: 85, difficulty: "Beginner",     duration: "15 min" },
+      { id: 2, title: "Spanish Rolling R",    progress: 60, difficulty: "Intermediate", duration: "20 min" },
+      { id: 3, title: "French Nasal Sounds",  progress: 40, difficulty: "Advanced",     duration: "25 min" },
+    ],
+    achievements: [
+      { id: 1, title: "First Steps",        description: "Complete your first lesson",    earned: true  },
+      { id: 2, title: "Week Warrior",        description: "Practice for 7 days straight", earned: true  },
+      { id: 3, title: "Pronunciation Pro",   description: "Achieve 90% accuracy",         earned: false },
+      { id: 4, title: "Polyglot",            description: "Practice 3 different languages", earned: false },
+    ],
+  }
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
-  const [currentStreak, setCurrentStreak] = useState(7)
+  const { user, logout } = useAuth()
 
-  const recentLessons = [
-    { id: 1, title: "English Vowel Sounds", progress: 85, difficulty: "Beginner", duration: "15 min" },
-    { id: 2, title: "Spanish Rolling R", progress: 60, difficulty: "Intermediate", duration: "20 min" },
-    { id: 3, title: "French Nasal Sounds", progress: 40, difficulty: "Advanced", duration: "25 min" },
-  ]
+  const [data, setData] = useState<DashboardData | null>(null)
+  const [dataLoading, setDataLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const achievements = [
-    { id: 1, title: "First Steps", description: "Complete your first lesson", earned: true },
-    { id: 2, title: "Week Warrior", description: "Practice for 7 days straight", earned: true },
-    { id: 3, title: "Pronunciation Pro", description: "Achieve 90% accuracy", earned: false },
-    { id: 4, title: "Polyglot", description: "Practice 3 different languages", earned: false },
-  ]
+  useEffect(() => {
+    if (!user?.id) return
 
-  const stats = [
-    { label: "Total Practice Time", value: "24h 30m", icon: <Clock className="h-5 w-5" /> },
-    { label: "Lessons Completed", value: "42", icon: <BookOpen className="h-5 w-5" /> },
-    { label: "Average Accuracy", value: "87%", icon: <Target className="h-5 w-5" /> },
-    { label: "Current Streak", value: `${currentStreak} days`, icon: <TrendingUp className="h-5 w-5" /> },
-  ]
+    let cancelled = false
+
+    setDataLoading(true)
+    fetchDashboardData(user.id)
+      .then((result) => {
+        if (!cancelled) setData(result)
+      })
+      .catch(() => {
+        if (!cancelled) setError("Failed to load dashboard. Please try again.")
+      })
+      .finally(() => {
+        if (!cancelled) setDataLoading(false)
+      })
+
+    return () => { cancelled = true }
+  }, [user?.id])
+
+  // Show skeleton while data is loading
+  if (dataLoading) {
+    return <DashboardSkeleton />
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <p className="text-gray-600">{error}</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    )
+  }
+
+  // Shouldn't happen, but guard anyway
+  if (!data) return null
+
+  const { streak, stats, recentLessons, achievements } = data
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -37,32 +120,30 @@ export default function Dashboard() {
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
-            <Link href={'/'} className="flex items-center">
+            <Link href="/" className="flex items-center">
               <Mic className="h-8 w-8 text-blue-600 mr-2" />
               <span className="text-2xl font-bold text-gray-900">SpeakAI</span>
             </Link>
-            
-            <nav className="hidden md:flex space-x-8">
-              <a href="/dashboard" className="text-blue-600 font-medium">
-                Dashboard
-              </a>
-              <a href="/practice" className="text-gray-600 hover:text-gray-900">
-                Practice
-              </a>
-              <a href="/progress" className="text-gray-600 hover:text-gray-900">
-                Progress
-              </a>
-              <a href="/lessons" className="text-gray-600 hover:text-gray-900">
-                Lessons
-              </a>
-            </nav>
+
+            <div className="hidden md:flex space-x-8">
+              <a href="/dashboard" className="text-blue-600 font-medium">Dashboard</a>
+              <a href="/practice"  className="text-gray-600 hover:text-gray-900">Practice</a>
+              <a href="/progress"  className="text-gray-600 hover:text-gray-900">Progress</a>
+              <a href="/lessons"   className="text-gray-600 hover:text-gray-900">Lessons</a>
+            </div>
+
             <div className="flex items-center space-x-4">
               <Button variant="ghost" size="sm">
                 <Calendar className="h-4 w-4 mr-2" />
                 Schedule
               </Button>
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">JD</span>
+              <button onClick={logout} className="text-sm text-gray-500 hover:text-gray-800">
+                Log out
+              </button>
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center overflow-hidden">
+                <span className="text-white text-sm font-medium">
+                  {user?.firstName?.[0] ?? "U"}{user?.lastName?.[0] ?? ""}
+                </span>
               </div>
             </div>
           </div>
@@ -70,16 +151,18 @@ export default function Dashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
+        {/* Welcome */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, John!</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Welcome back, {user?.firstName ?? "User"}!
+          </h1>
           <p className="text-gray-600">Ready to continue your pronunciation journey?</p>
         </div>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <Card key={index}>
+          {stats.map((stat, i) => (
+            <Card key={i}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -124,9 +207,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                       <Link href="/practice">
-                        <Button size="sm" className="ml-4">
-                          Continue
-                        </Button>
+                        <Button size="sm" className="ml-4">Continue</Button>
                       </Link>
                     </div>
                   ))}
@@ -162,7 +243,7 @@ export default function Dashboard() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Streak Counter */}
+            {/* Streak */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -172,13 +253,13 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-yellow-600 mb-2">{currentStreak}</div>
+                  <div className="text-4xl font-bold text-yellow-600 mb-2">{streak}</div>
                   <p className="text-gray-600 mb-4">days in a row</p>
                   <div className="flex justify-center space-x-1">
                     {[...Array(7)].map((_, i) => (
                       <div
                         key={i}
-                        className={`w-6 h-6 rounded-full ${i < currentStreak ? "bg-yellow-400" : "bg-gray-200"}`}
+                        className={`w-6 h-6 rounded-full ${i < streak ? "bg-yellow-400" : "bg-gray-200"}`}
                       />
                     ))}
                   </div>
@@ -196,23 +277,23 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {achievements.map((achievement) => (
+                  {achievements.map((a) => (
                     <div
-                      key={achievement.id}
+                      key={a.id}
                       className={`flex items-center p-3 rounded-lg ${
-                        achievement.earned ? "bg-green-50 border border-green-200" : "bg-gray-50"
+                        a.earned ? "bg-green-50 border border-green-200" : "bg-gray-50"
                       }`}
                     >
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${
-                          achievement.earned ? "bg-green-500" : "bg-gray-300"
+                          a.earned ? "bg-green-500" : "bg-gray-300"
                         }`}
                       >
-                        <Trophy className={`h-4 w-4 ${achievement.earned ? "text-white" : "text-gray-500"}`} />
+                        <Trophy className={`h-4 w-4 ${a.earned ? "text-white" : "text-gray-500"}`} />
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-medium text-sm">{achievement.title}</h4>
-                        <p className="text-xs text-gray-600">{achievement.description}</p>
+                        <h4 className="font-medium text-sm">{a.title}</h4>
+                        <p className="text-xs text-gray-600">{a.description}</p>
                       </div>
                     </div>
                   ))}

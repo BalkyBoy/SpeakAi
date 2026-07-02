@@ -71,19 +71,31 @@ export type ResetPasswordDto = {
     newPassword: string;
 };
 
-export type CreateUserDto = {
-    [key: string]: unknown;
-};
-
 export type UpdateUserDto = {
     [key: string]: unknown;
 };
 
-export type CreateLessonDto = {
+export type UpdateLessonDto = {
     [key: string]: unknown;
 };
 
-export type UpdateLessonDto = {
+export type AnalyzeSpeechDto = {
+    [key: string]: unknown;
+};
+
+export type CompareSpeechDto = {
+    [key: string]: unknown;
+};
+
+export type GenerateAudioDto = {
+    [key: string]: unknown;
+};
+
+export type CreateSpeechDto = {
+    [key: string]: unknown;
+};
+
+export type UpdateSpeechDto = {
     [key: string]: unknown;
 };
 
@@ -232,124 +244,205 @@ export type AuthControllerLogoutResponses = {
     201: unknown;
 };
 
-export type UserControllerFindAllData = {
+export type UserControllerProfileData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/user';
+    url: '/user/profile';
 };
 
-export type UserControllerFindAllResponses = {
+export type UserControllerProfileResponses = {
     200: unknown;
 };
 
-export type UserControllerCreateData = {
-    body: CreateUserDto;
-    path?: never;
-    query?: never;
-    url: '/user';
-};
-
-export type UserControllerCreateResponses = {
-    201: unknown;
-};
-
-export type UserControllerRemoveData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/user/{id}';
-};
-
-export type UserControllerRemoveResponses = {
-    200: unknown;
-};
-
-export type UserControllerFindOneData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/user/{id}';
-};
-
-export type UserControllerFindOneResponses = {
-    200: unknown;
-};
-
-export type UserControllerUpdateData = {
+export type UserControllerUpdateUserProfileData = {
     body: UpdateUserDto;
     path: {
-        id: string;
+        userId: string;
     };
     query?: never;
-    url: '/user/{id}';
+    url: '/user/{userId}';
 };
 
-export type UserControllerUpdateResponses = {
+export type UserControllerUpdateUserProfileResponses = {
     200: unknown;
 };
 
-export type LessonControllerFindAllData = {
+export type LessonControllerGetRecommendedData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/lesson';
+    url: '/lesson/recommend';
 };
 
-export type LessonControllerFindAllResponses = {
+export type LessonControllerGetRecommendedResponses = {
     200: unknown;
 };
 
-export type LessonControllerCreateData = {
-    body: CreateLessonDto;
+export type LessonControllerSearchData = {
+    body?: never;
     path?: never;
     query?: never;
-    url: '/lesson';
+    url: '/lesson/search';
 };
 
-export type LessonControllerCreateResponses = {
+export type LessonControllerSearchResponses = {
+    200: unknown;
+};
+
+export type LessonControllerGetLessonByIdData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/lesson/{id}';
+};
+
+export type LessonControllerGetLessonByIdResponses = {
+    200: unknown;
+};
+
+export type LessonControllerStartLessonData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/lesson/{id}/start';
+};
+
+export type LessonControllerStartLessonResponses = {
     201: unknown;
 };
 
-export type LessonControllerRemoveData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/lesson/{id}';
-};
-
-export type LessonControllerRemoveResponses = {
-    200: unknown;
-};
-
-export type LessonControllerFindOneData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/lesson/{id}';
-};
-
-export type LessonControllerFindOneResponses = {
-    200: unknown;
-};
-
-export type LessonControllerUpdateData = {
+export type LessonControllerUpdateProgressData = {
     body: UpdateLessonDto;
     path: {
         id: string;
     };
     query?: never;
-    url: '/lesson/{id}';
+    url: '/lesson/id/progress';
 };
 
-export type LessonControllerUpdateResponses = {
+export type LessonControllerUpdateProgressResponses = {
+    200: unknown;
+};
+
+export type SpeechControllerGetSupportedLanguagesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/speech/supported-languages';
+};
+
+export type SpeechControllerGetSupportedLanguagesResponses = {
+    200: unknown;
+};
+
+export type SpeechControllerGetPhonemesData = {
+    body?: never;
+    path: {
+        language: string;
+    };
+    query?: never;
+    url: '/speech/phonemes/{language}';
+};
+
+export type SpeechControllerGetPhonemesResponses = {
+    200: unknown;
+};
+
+export type SpeechControllerAnalyzeSpeechData = {
+    body: AnalyzeSpeechDto;
+    path?: never;
+    query?: never;
+    url: '/speech/analyze';
+};
+
+export type SpeechControllerAnalyzeSpeechResponses = {
+    201: unknown;
+};
+
+export type SpeechControllerCompareSpeechData = {
+    body: CompareSpeechDto;
+    path?: never;
+    query?: never;
+    url: '/speech/compare';
+};
+
+export type SpeechControllerCompareSpeechResponses = {
+    201: unknown;
+};
+
+export type SpeechControllerGenerateAudioData = {
+    body: GenerateAudioDto;
+    path?: never;
+    query?: never;
+    url: '/speech/generate-audio';
+};
+
+export type SpeechControllerGenerateAudioResponses = {
+    201: unknown;
+};
+
+export type SpeechControllerFindAllData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/speech';
+};
+
+export type SpeechControllerFindAllResponses = {
+    200: unknown;
+};
+
+export type SpeechControllerCreateData = {
+    body: CreateSpeechDto;
+    path?: never;
+    query?: never;
+    url: '/speech';
+};
+
+export type SpeechControllerCreateResponses = {
+    201: unknown;
+};
+
+export type SpeechControllerRemoveData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/speech/{id}';
+};
+
+export type SpeechControllerRemoveResponses = {
+    200: unknown;
+};
+
+export type SpeechControllerFindOneData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/speech/{id}';
+};
+
+export type SpeechControllerFindOneResponses = {
+    200: unknown;
+};
+
+export type SpeechControllerUpdateData = {
+    body: UpdateSpeechDto;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/speech/{id}';
+};
+
+export type SpeechControllerUpdateResponses = {
     200: unknown;
 };

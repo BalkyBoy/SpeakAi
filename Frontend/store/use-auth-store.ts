@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 
-interface Auth {
+export interface AuthSession {
   email: string;
   token: string;
   id?: string | null;
@@ -10,17 +10,19 @@ interface Auth {
   nativeLanguage?: string;
   learningLanguage?: string;
   isEmailVerified?: boolean | null;
-  createdAt?: string | null
+  createdAt?: string | null;
 }
 
-const initialAuth: Auth = {
+export type UserProfile = Omit<AuthSession, "token">;
+
+const initialAuth: AuthSession = {
   email: "",
   token: "",
 };
 
 interface AuthState {
-  auth: Auth;
-  setAuth: (auth: Auth, ttlInms?: number) => void;
+  auth: AuthSession;
+  setAuth: (auth: AuthSession, ttlInms?: number) => void;
   clearAuth: () => void;
 }
 
@@ -29,7 +31,7 @@ export const useAuthStore = create<AuthState>()(
     persist(
       (set) => ({
         auth: initialAuth,
-        setAuth: (auth: Auth) => set({ auth }),
+        setAuth: (auth: AuthSession) => set({ auth }),
         clearAuth: () =>
           set({
             auth: initialAuth,

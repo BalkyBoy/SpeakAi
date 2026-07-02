@@ -1,22 +1,48 @@
-# README – Speak AI
+# Speak
 
-## Overview
-**Speak AI** is a voice intelligence platform that converts speech into structured, searchable, and actionable insights. It provides real-time and batch speech-to-text, language analysis, and conversation intelligence for enterprises, developers, governments, and researchers.
+Speak is an AI-powered platform for learning African languages through interactive lessons, real-world content, and intelligent language assistance. The platform helps users learn, practice, and understand African languages while connecting them to the cultures, stories, and music behind them.
 
-Speak AI is built with a **NestJS + Prisma + PostgreSQL** backend, designed to scale from MVP to enterprise-grade deployments.
+A unique feature of the platform allows users to upload or paste audio from African songs, conversations, podcasts, or recordings when they don't know the lyrics or meaning. Using AI, the platform can transcribe the audio, identify the language, generate lyrics where possible, provide translations, and explain the meaning and cultural context of words and expressions.
 
----
+## Features
 
-## Core Features
-- 🎙️ Real-time & batch speech-to-text
-- 🌍 Multilingual transcription & translation
-- 🧠 NLP insights (sentiment, topics, entities, summaries)
-- 🔍 Searchable transcripts
-- 🔐 Enterprise-grade security & data privacy
-- 🔌 Developer-first REST & streaming APIs
+- Learn African languages through structured lessons
+- AI-powered language tutoring
+- Speech recognition and pronunciation feedback
+- Audio transcription for African languages
+- Song lyric extraction and translation
+- Language detection from audio recordings
+- Vocabulary building and flashcards
+- Interactive quizzes and challenges
+- Progress tracking and achievements
+- Mobile and web accessibility
 
----
+## Understand African Music
 
+Love an African song but don't know what is being said?
+
+Simply upload or paste the audio and the platform will:
+
+- Detect the language being spoken or sung
+- Generate lyrics where possible
+- Translate the lyrics into your preferred language
+- Explain slang, idioms, and cultural references
+- Help you learn vocabulary directly from songs
+
+## Learn Through Real Content
+
+The platform goes beyond traditional language lessons by helping users learn from:
+
+- Music
+- Podcasts
+- Conversations
+- Storytelling
+- Cultural content
+- Everyday speech
+
+## Mission
+
+Our mission is to make African languages more accessible to learners around the world while preserving and celebrating Africa's rich linguistic and cultural heritage through education, technology, and AI.
 ## Tech Stack
 
 ### Backend

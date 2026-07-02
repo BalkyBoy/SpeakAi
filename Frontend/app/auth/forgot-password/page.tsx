@@ -1,5 +1,3 @@
-import React from 'react';
-import { Card, CardContent } from '../../../components/ui/card';
 import ForgotPasswordForm from './components/forgot-password-form';
 
 const page = () => {
