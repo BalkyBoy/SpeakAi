@@ -9,8 +9,9 @@ import { Badge } from "@/components/ui/badge"
 import { Mic, Play, Trophy, Clock, Target, TrendingUp, BookOpen, Award, Calendar } from "lucide-react"
 import Link from "next/link"
 import { DashboardSkeleton } from "./components/dashboard-skeleton"
+import { useMutation } from "@tanstack/react-query"
+import { userControllerProfileOptions } from "../client/@tanstack/react-query.gen"
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Lesson {
   id: number
@@ -34,12 +35,9 @@ interface DashboardData {
   achievements: Achievement[]
 }
 
-// ─── Mock API fetch (replace with your real endpoint) ─────────────────────────
 
-async function fetchDashboardData(userId: string): Promise<DashboardData> {
-  // Simulate network latency — swap this for a real fetch call:
-  // const res = await fetch(`/api/dashboard/${userId}`)
-  // return res.json()
+async function fetchDashboardData(): Promise<DashboardData> {
+
   await new Promise((r) => setTimeout(r, 1400))
 
   return {
@@ -64,8 +62,6 @@ async function fetchDashboardData(userId: string): Promise<DashboardData> {
   }
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
 export default function Dashboard() {
   const { user, logout } = useAuth()
 
@@ -73,25 +69,36 @@ export default function Dashboard() {
   const [dataLoading, setDataLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // useEffect(() => {
+  //   if (!user?.id) return
+
+  //   let cancelled = false
+
+  //   setDataLoading(true)
+  //   fetchDashboardData()
+  //     .then((result) => {
+  //       if (!cancelled) setData(result)
+  //     })
+  //     .catch(() => {
+  //       if (!cancelled) setError("Failed to load dashboard. Please try again.")
+  //     })
+  //     .finally(() => {
+  //       if (!cancelled) setDataLoading(false)
+  //     })
+
+  //   return () => { cancelled = true }
+  // }, [user?.id])
+
   useEffect(() => {
-    if (!user?.id) return
+  if (!user) return;
 
-    let cancelled = false
+  setDataLoading(true);
 
-    setDataLoading(true)
-    fetchDashboardData(user.id)
-      .then((result) => {
-        if (!cancelled) setData(result)
-      })
-      .catch(() => {
-        if (!cancelled) setError("Failed to load dashboard. Please try again.")
-      })
-      .finally(() => {
-        if (!cancelled) setDataLoading(false)
-      })
-
-    return () => { cancelled = true }
-  }, [user?.id])
+  fetchDashboardData()
+    .then(setData)
+    .catch(() => setError("Failed to load dashboard"))
+    .finally(() => setDataLoading(false));
+}, [user]);
 
   // Show skeleton while data is loading
   if (dataLoading) {

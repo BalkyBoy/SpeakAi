@@ -9,6 +9,7 @@ export class UserController {
   constructor(private readonly userService: UserService) { }
   @Get('profile')
   profile(@CurrentUser() user: User) {
+    console.log('Current user:', user);
     return {
       id: user.id,
       email: user.email,

@@ -12,7 +12,7 @@
           return publicRoutes.includes(pathname);
         } 
 
-        export function middleware(request: NextRequest): NextResponse {
+        export function proxy(request: NextRequest): NextResponse {
           const { pathname } = request.nextUrl
           const token = request.cookies.get(AUTH_COOKIE)?.value
 

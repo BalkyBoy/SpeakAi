@@ -13,6 +13,7 @@ import { ExpressAdapter } from '@bull-board/express';
 import { ConfigModule } from '@nestjs/config';
 import { SpeechModule } from './speech/speech.module';
 import appConfig from './config/app.config';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import appConfig from './config/app.config';
     AuthModule,
     UserModule,
     LessonModule,
+    DashboardModule,
     PrismaModule,
     MailModule,
     QueueModule,

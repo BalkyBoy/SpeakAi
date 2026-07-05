@@ -117,7 +117,7 @@ export default function LoginForm() {
       client.setConfig({
         baseUrl: process.env.NEXT_PUBLIC_API_URL,
         credentials: "include",
-        headers: {
+        headers: { 
           Authorization: `Bearer ${userData.accessToken}`,
         },
       });

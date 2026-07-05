@@ -37,7 +37,6 @@ export class AuthService {
 
   setAuthCookie(res: Response, accesstoken: string, refreshToken: string) {
     const isProd = process.env.NODE_ENV === 'production';
-    console.log('[auth.service] setAuthCookie called with token length:', accesstoken?.length || 0);
 
     res.cookie('accessToken', accesstoken, {
       httpOnly: true,
@@ -54,7 +53,6 @@ export class AuthService {
       path: '/',
       maxAge: 1000 * 60 * 60 * 24 * 30,
     });
-    console.log('[auth.service] cookies set');
   }
 
   clearAuthCookie(res: Response) {
