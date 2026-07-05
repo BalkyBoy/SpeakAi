@@ -4,12 +4,64 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { GetLessonsDto } from './dto/get-lessons.dto';
 import { SearchLessonDto } from './dto/search-lesson.dto';
 import { UpdateProgressDto } from './dto/update-progress.dto';
 
 @Injectable()
 export class LessonService {
   constructor(private prisma: PrismaService) { }
+  async getAllLessons(dto: GetLessonsDto, userId: string) {
+    const page = dto.page ?? 1;
+    const limit = dto.limit ?? 20;
+    const skip = (page - 1) * limit;
+
+    const where = {
+      isPublished: true,
+      ...(dto.language && { language: dto.language }),
+      ...(dto.level && { level: dto.level }),
+      ...(dto.category && {
+        categories: {
+          some: {
+            category: { slug: dto.category.toLowerCase().replace(/\s+/g, '-') },
+          },
+        },
+      }),
+    };
+
+    const [total, rows] = await this.prisma.$transaction([
+      this.prisma.lesson.count({ where }),
+      this.prisma.lesson.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: [{ rating: 'desc' }, { studentCount: 'desc' }],
+        include: {
+          categories: { include: { category: true } },
+          progress: {
+            where: { userId },
+            select: { progress: true, completed: true },
+          },
+        },
+      }),
+    ]);
+
+    const data = rows.map(({ progress, ...lesson }) => ({
+      ...lesson,
+      userProgress: progress[0] ?? null,
+    }));
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
   async getLessonById(id: string, userId: string) {
     const lesson = await this.prisma.lesson.findUnique({
       where: { id },

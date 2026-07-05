@@ -5,12 +5,17 @@ import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators';
 import type { User } from '@prisma/client';
 import { SearchLessonDto } from './dto/search-lesson.dto';
+import { GetLessonsDto } from './dto/get-lessons.dto';
 
 @Controller('lesson')
 @UseGuards(JwtAuthGuard)
 export class LessonController {
   constructor(private readonly lessonService: LessonService) { }
 
+  @Get()
+  getAll(@Query() dto: GetLessonsDto, @CurrentUser() user: User) {
+    return this.lessonService.getAllLessons(dto, user.id);
+  }
 
   @Get('recommend')
   getRecommended(@CurrentUser() user: User) {

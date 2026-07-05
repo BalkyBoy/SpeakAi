@@ -36,7 +36,7 @@ export class AuthController {
     const { accessToken, refreshToken, user } =
       await this.authService.login(dto);
     this.authService.setAuthCookie(res, accessToken, refreshToken);
-    return { id:user.id,email:user.email, name:user.firstName, native:user.nativeLanguage, learning:user.learningLanguage, verified:user.isEmailVerified, status:user.isActive, accessToken };
+    return { id:user.id,email:user.email, name:user.firstName, native:user.nativeLanguage, learningLanguage:user.learningLanguage, verified:user.isEmailVerified, status:user.isActive, accessToken };
   }
 
   @Post('verify-email')
