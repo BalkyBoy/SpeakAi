@@ -3,8 +3,8 @@
 import { type DefaultError, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { appControllerGetHello, authControllerForgotPassword, authControllerLogin, authControllerLogout, authControllerRefresh, authControllerRegister, authControllerResendVerification, authControllerResetPassword, authControllerVerifyEmail, lessonControllerGetLessonById, lessonControllerGetRecommended, lessonControllerSearch, lessonControllerStartLesson, lessonControllerUpdateProgress, type Options, speechControllerAnalyzeSpeech, speechControllerCompareSpeech, speechControllerCreate, speechControllerFindAll, speechControllerFindOne, speechControllerGenerateAudio, speechControllerGetPhonemes, speechControllerGetSupportedLanguages, speechControllerRemove, speechControllerUpdate, userControllerProfile, userControllerUpdateUserProfile } from '../sdk.gen';
-import type { AppControllerGetHelloData, AuthControllerForgotPasswordData, AuthControllerLoginData, AuthControllerLogoutData, AuthControllerRefreshData, AuthControllerRegisterData, AuthControllerResendVerificationData, AuthControllerResetPasswordData, AuthControllerVerifyEmailData, LessonControllerGetLessonByIdData, LessonControllerGetRecommendedData, LessonControllerSearchData, LessonControllerStartLessonData, LessonControllerUpdateProgressData, SpeechControllerAnalyzeSpeechData, SpeechControllerCompareSpeechData, SpeechControllerCreateData, SpeechControllerFindAllData, SpeechControllerFindOneData, SpeechControllerGenerateAudioData, SpeechControllerGetPhonemesData, SpeechControllerGetSupportedLanguagesData, SpeechControllerRemoveData, SpeechControllerUpdateData, UserControllerProfileData, UserControllerUpdateUserProfileData } from '../types.gen';
+import { appControllerGetHello, authControllerForgotPassword, authControllerLogin, authControllerLogout, authControllerRefresh, authControllerRegister, authControllerResendVerification, authControllerResetPassword, authControllerVerifyEmail, dashboardControllerGetDashboardData, lessonControllerGetLessonById, lessonControllerGetRecommended, lessonControllerSearch, lessonControllerStartLesson, lessonControllerUpdateProgress, type Options, speechControllerAnalyzeSpeech, speechControllerCompareSpeech, speechControllerCreate, speechControllerFindAll, speechControllerFindOne, speechControllerGenerateAudio, speechControllerGetPhonemes, speechControllerGetSupportedLanguages, speechControllerRemove, speechControllerUpdate, userControllerProfile, userControllerUpdateUserProfile } from '../sdk.gen';
+import type { AppControllerGetHelloData, AuthControllerForgotPasswordData, AuthControllerLoginData, AuthControllerLogoutData, AuthControllerRefreshData, AuthControllerRegisterData, AuthControllerResendVerificationData, AuthControllerResetPasswordData, AuthControllerVerifyEmailData, DashboardControllerGetDashboardDataData, LessonControllerGetLessonByIdData, LessonControllerGetRecommendedData, LessonControllerSearchData, LessonControllerStartLessonData, LessonControllerUpdateProgressData, SpeechControllerAnalyzeSpeechData, SpeechControllerCompareSpeechData, SpeechControllerCreateData, SpeechControllerFindAllData, SpeechControllerFindOneData, SpeechControllerGenerateAudioData, SpeechControllerGetPhonemesData, SpeechControllerGetSupportedLanguagesData, SpeechControllerRemoveData, SpeechControllerUpdateData, UserControllerProfileData, UserControllerUpdateUserProfileData } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -288,6 +288,21 @@ export const lessonControllerUpdateProgressMutation = (options?: Partial<Options
     };
     return mutationOptions;
 };
+
+export const dashboardControllerGetDashboardDataQueryKey = (options?: Options<DashboardControllerGetDashboardDataData>) => createQueryKey('dashboardControllerGetDashboardData', options);
+
+export const dashboardControllerGetDashboardDataOptions = (options?: Options<DashboardControllerGetDashboardDataData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof dashboardControllerGetDashboardDataQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await dashboardControllerGetDashboardData({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: dashboardControllerGetDashboardDataQueryKey(options)
+});
 
 export const speechControllerGetSupportedLanguagesQueryKey = (options?: Options<SpeechControllerGetSupportedLanguagesData>) => createQueryKey('speechControllerGetSupportedLanguages', options);
 

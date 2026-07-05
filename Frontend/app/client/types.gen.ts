@@ -329,6 +329,17 @@ export type LessonControllerUpdateProgressResponses = {
     200: unknown;
 };
 
+export type DashboardControllerGetDashboardDataData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/dashboard';
+};
+
+export type DashboardControllerGetDashboardDataResponses = {
+    200: unknown;
+};
+
 export type SpeechControllerGetSupportedLanguagesData = {
     body?: never;
     path?: never;

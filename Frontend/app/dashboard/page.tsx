@@ -1,6 +1,5 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { useAuth } from "@/app/providers/auth-provider"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,9 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { Mic, Play, Trophy, Clock, Target, TrendingUp, BookOpen, Award, Calendar } from "lucide-react"
 import Link from "next/link"
 import { DashboardSkeleton } from "./components/dashboard-skeleton"
-import { useMutation } from "@tanstack/react-query"
-import { userControllerProfileOptions } from "../client/@tanstack/react-query.gen"
-
+import { useQuery } from "@tanstack/react-query"
+import { dashboardControllerGetDashboardDataOptions } from "../client/@tanstack/react-query.gen"
 
 interface Lesson {
   id: number
@@ -28,98 +26,56 @@ interface Achievement {
   earned: boolean
 }
 
-interface DashboardData {
+interface ApiDashboardData {
   streak: number
-  stats: { label: string; value: string; icon: React.ReactNode }[]
+  totalPracticeTime: string
+  lessonsCompleted: number
+  averageAccuracy: number
   recentLessons: Lesson[]
   achievements: Achievement[]
-}
-
-
-async function fetchDashboardData(): Promise<DashboardData> {
-
-  await new Promise((r) => setTimeout(r, 1400))
-
-  return {
-    streak: 7,
-    stats: [
-      { label: "Total Practice Time", value: "24h 30m", icon: <Clock className="h-5 w-5" /> },
-      { label: "Lessons Completed",   value: "42",      icon: <BookOpen className="h-5 w-5" /> },
-      { label: "Average Accuracy",    value: "87%",     icon: <Target className="h-5 w-5" /> },
-      { label: "Current Streak",      value: "7 days",  icon: <TrendingUp className="h-5 w-5" /> },
-    ],
-    recentLessons: [
-      { id: 1, title: "English Vowel Sounds", progress: 85, difficulty: "Beginner",     duration: "15 min" },
-      { id: 2, title: "Spanish Rolling R",    progress: 60, difficulty: "Intermediate", duration: "20 min" },
-      { id: 3, title: "French Nasal Sounds",  progress: 40, difficulty: "Advanced",     duration: "25 min" },
-    ],
-    achievements: [
-      { id: 1, title: "First Steps",        description: "Complete your first lesson",    earned: true  },
-      { id: 2, title: "Week Warrior",        description: "Practice for 7 days straight", earned: true  },
-      { id: 3, title: "Pronunciation Pro",   description: "Achieve 90% accuracy",         earned: false },
-      { id: 4, title: "Polyglot",            description: "Practice 3 different languages", earned: false },
-    ],
-  }
 }
 
 export default function Dashboard() {
   const { user, logout } = useAuth()
 
-  const [data, setData] = useState<DashboardData | null>(null)
-  const [dataLoading, setDataLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const {
+    data: apiData,
+    isLoading: dataLoading,
+    isError,
+  } = useQuery({
+    ...dashboardControllerGetDashboardDataOptions(),
+    enabled: !!user,
+  })
 
-  // useEffect(() => {
-  //   if (!user?.id) return
+  const data = apiData as ApiDashboardData | undefined
 
-  //   let cancelled = false
+  const streak = data?.streak ?? 0
 
-  //   setDataLoading(true)
-  //   fetchDashboardData()
-  //     .then((result) => {
-  //       if (!cancelled) setData(result)
-  //     })
-  //     .catch(() => {
-  //       if (!cancelled) setError("Failed to load dashboard. Please try again.")
-  //     })
-  //     .finally(() => {
-  //       if (!cancelled) setDataLoading(false)
-  //     })
+  const stats = [
+    { label: "Total Practice Time", value: data?.totalPracticeTime ?? "—",                        icon: <Clock className="h-5 w-5" /> },
+    { label: "Lessons Completed",   value: data?.lessonsCompleted != null ? String(data.lessonsCompleted) : "—", icon: <BookOpen className="h-5 w-5" /> },
+    { label: "Average Accuracy",    value: data?.averageAccuracy  != null ? `${data.averageAccuracy}%`  : "—", icon: <Target className="h-5 w-5" /> },
+    { label: "Current Streak",      value: streak ? `${streak} days` : "—",                       icon: <TrendingUp className="h-5 w-5" /> },
+  ]
 
-  //   return () => { cancelled = true }
-  // }, [user?.id])
-
-  useEffect(() => {
-  if (!user) return;
-
-  setDataLoading(true);
-
-  fetchDashboardData()
-    .then(setData)
-    .catch(() => setError("Failed to load dashboard"))
-    .finally(() => setDataLoading(false));
-}, [user]);
+  const recentLessons: Lesson[] = data?.recentLessons ?? []
+  const achievements: Achievement[] = data?.achievements ?? []
 
   // Show skeleton while data is loading
   if (dataLoading) {
     return <DashboardSkeleton />
   }
 
-  if (error) {
+  if (isError) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center space-y-3">
-          <p className="text-gray-600">{error}</p>
+          <p className="text-gray-600">Failed to load dashboard. Please try again.</p>
           <Button onClick={() => window.location.reload()}>Retry</Button>
         </div>
       </div>
     )
   }
-
-  // Shouldn't happen, but guard anyway
-  if (!data) return null
-
-  const { streak, stats, recentLessons, achievements } = data
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -130,7 +130,7 @@ export default function LessonsPage() {
               <Mic className="h-8 w-8 text-blue-600 mr-2" />
               <span className="text-2xl font-bold text-gray-900">SpeakAI</span>
             </div>
-            <nav className="hidden md:flex space-x-8">
+            <div className="hidden md:flex space-x-8">
               <a href="/dashboard" className="text-gray-600 hover:text-gray-900">
                 Dashboard
               </a>
@@ -143,7 +143,7 @@ export default function LessonsPage() {
               <a href="/lessons" className="text-blue-600 font-medium">
                 Lessons
               </a>
-            </nav>
+            </div>
           </div>
         </div>
       </header>
