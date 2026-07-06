@@ -3,8 +3,8 @@
 import { type DefaultError, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { appControllerGetHello, authControllerForgotPassword, authControllerLogin, authControllerLogout, authControllerRefresh, authControllerRegister, authControllerResendVerification, authControllerResetPassword, authControllerVerifyEmail, dashboardControllerGetDashboardData, lessonControllerGetLessonById, lessonControllerGetRecommended, lessonControllerSearch, lessonControllerStartLesson, lessonControllerUpdateProgress, type Options, speechControllerAnalyzeSpeech, speechControllerCompareSpeech, speechControllerCreate, speechControllerFindAll, speechControllerFindOne, speechControllerGenerateAudio, speechControllerGetPhonemes, speechControllerGetSupportedLanguages, speechControllerRemove, speechControllerUpdate, userControllerProfile, userControllerUpdateUserProfile } from '../sdk.gen';
-import type { AppControllerGetHelloData, AuthControllerForgotPasswordData, AuthControllerLoginData, AuthControllerLogoutData, AuthControllerRefreshData, AuthControllerRegisterData, AuthControllerResendVerificationData, AuthControllerResetPasswordData, AuthControllerVerifyEmailData, DashboardControllerGetDashboardDataData, LessonControllerGetLessonByIdData, LessonControllerGetRecommendedData, LessonControllerSearchData, LessonControllerStartLessonData, LessonControllerUpdateProgressData, SpeechControllerAnalyzeSpeechData, SpeechControllerCompareSpeechData, SpeechControllerCreateData, SpeechControllerFindAllData, SpeechControllerFindOneData, SpeechControllerGenerateAudioData, SpeechControllerGetPhonemesData, SpeechControllerGetSupportedLanguagesData, SpeechControllerRemoveData, SpeechControllerUpdateData, UserControllerProfileData, UserControllerUpdateUserProfileData } from '../types.gen';
+import { appControllerGetHello, authControllerForgotPassword, authControllerLogin, authControllerLogout, authControllerRefresh, authControllerRegister, authControllerResendVerification, authControllerResetPassword, authControllerVerifyEmail, dashboardControllerGetDashboardData, lessonControllerGetAll, lessonControllerGetLessonById, lessonControllerGetRecommended, lessonControllerSearch, lessonControllerStartLesson, lessonControllerUpdateProgress, type Options, speechControllerAnalyzeSpeech, speechControllerCompareSpeech, speechControllerCreate, speechControllerFindAll, speechControllerFindOne, speechControllerGenerateAudio, speechControllerGetPhonemes, speechControllerGetSupportedLanguages, speechControllerRemove, speechControllerUpdate, userControllerProfile, userControllerUpdateUserProfile } from '../sdk.gen';
+import type { AppControllerGetHelloData, AuthControllerForgotPasswordData, AuthControllerLoginData, AuthControllerLogoutData, AuthControllerRefreshData, AuthControllerRegisterData, AuthControllerResendVerificationData, AuthControllerResetPasswordData, AuthControllerVerifyEmailData, DashboardControllerGetDashboardDataData, LessonControllerGetAllData, LessonControllerGetLessonByIdData, LessonControllerGetRecommendedData, LessonControllerSearchData, LessonControllerStartLessonData, LessonControllerUpdateProgressData, SpeechControllerAnalyzeSpeechData, SpeechControllerCompareSpeechData, SpeechControllerCreateData, SpeechControllerFindAllData, SpeechControllerFindOneData, SpeechControllerGenerateAudioData, SpeechControllerGetPhonemesData, SpeechControllerGetSupportedLanguagesData, SpeechControllerRemoveData, SpeechControllerUpdateData, UserControllerProfileData, UserControllerUpdateUserProfileData } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -215,6 +215,21 @@ export const userControllerUpdateUserProfileMutation = (options?: Partial<Option
     };
     return mutationOptions;
 };
+
+export const lessonControllerGetAllQueryKey = (options?: Options<LessonControllerGetAllData>) => createQueryKey('lessonControllerGetAll', options);
+
+export const lessonControllerGetAllOptions = (options?: Options<LessonControllerGetAllData>) => queryOptions<unknown, DefaultError, unknown, ReturnType<typeof lessonControllerGetAllQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await lessonControllerGetAll({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: lessonControllerGetAllQueryKey(options)
+});
 
 export const lessonControllerGetRecommendedQueryKey = (options?: Options<LessonControllerGetRecommendedData>) => createQueryKey('lessonControllerGetRecommended', options);
 

@@ -268,6 +268,23 @@ export type UserControllerUpdateUserProfileResponses = {
     200: unknown;
 };
 
+export type LessonControllerGetAllData = {
+    body?: never;
+    path?: never;
+    query?: {
+        language?: string;
+        level?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+        category?: string;
+        page?: number;
+        limit?: number;
+    };
+    url: '/lesson';
+};
+
+export type LessonControllerGetAllResponses = {
+    200: unknown;
+};
+
 export type LessonControllerGetRecommendedData = {
     body?: never;
     path?: never;
